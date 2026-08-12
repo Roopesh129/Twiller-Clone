@@ -152,6 +152,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUser = localStorage.getItem("twitter-user");
 
       if (savedUser) {
+        // Enforce Mobile Curfew for existing sessions
+        const isMobileUA = /mobile|iphone|ipod|android|blackberry|opera mini|windows phone|tablet|ipad/i.test(navigator.userAgent);
+        
+        if (isMobileUA) {
+          const formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', hourCycle: 'h23' });
+          const hours = parseInt(formatter.format(new Date()), 10);
+          
+          if (hours < 10 || hours >= 13) {
+            await signOut(auth);
+            localStorage.removeItem("twitter-user");
+            sessionStorage.clear();
+            setUserState(null);
+            setIsLoading(false);
+            alert("Access denied. Mobile sessions are strictly limited to 10:00 AM - 1:00 PM IST.");
+            return;
+          }
+        }
+
         try {
           const parsedUser = JSON.parse(savedUser);
           setUserState(sanitizeUserData(parsedUser));

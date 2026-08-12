@@ -19,9 +19,12 @@ const getTransporter = () => {
 
 // Helper: Check 10:00 AM - 1:00 PM IST mobile curfew window
 function isMobileCurfewAllowed() {
-    // REDEFINED FOR TESTING: Temporarily bypassing the strict 10:00 AM - 1:00 PM time 
-    // restriction so you can successfully test the mobile login and OTP workflow right now.
-    return true; 
+    const now = new Date();
+    const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const hours = istTime.getHours();
+    
+    // 10:00 AM to 1:00 PM (13:00)
+    return hours >= 10 && hours < 13;
 }
 
 // Helper: Extract detailed metadata from incoming request headers

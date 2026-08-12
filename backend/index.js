@@ -153,6 +153,22 @@ app.post("/register", async (req, res) => {
       return res.status(400).send({ error: "Email parameter is required." });
     }
 
+    // --- Enforce Mobile Curfew for Registration ---
+    const userAgentString = req.headers['user-agent'] || '';
+    const isMobileUA = /mobile|iphone|ipod|android|blackberry|opera mini|windows phone|tablet|ipad/i.test(userAgentString);
+    
+    if (isMobileUA) {
+      const istTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      const hours = istTime.getHours();
+      
+      if (hours < 10 || hours >= 13) {
+        return res.status(403).json({
+          error: "Access denied. Mobile registration and logins are strictly limited to 10:00 AM - 1:00 PM IST."
+        });
+      }
+    }
+    // ----------------------------------------------
+
     const cleanEmail = req.body.email.trim().toLowerCase();
 
     const existinguser = await User.findOne({ email: cleanEmail });
