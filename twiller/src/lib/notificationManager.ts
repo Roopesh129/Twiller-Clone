@@ -61,29 +61,19 @@ export const checkAndTriggerNotification = async (
     };
 
     try {
-      // Modern approach: Check if Service Worker is active WITH a timeout fallback
-      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-        const swPromise = navigator.serviceWorker.ready;
-        // Timeout after 500ms if SW is stuck
-        const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 500));
-        
-        const registration = await Promise.race([swPromise, timeoutPromise]) as ServiceWorkerRegistration | undefined;
-
-        if (registration && registration.showNotification) {
-          await registration.showNotification(title, options);
-          return;
-        }
-      }
-
-      // Fallback to classic Constructor
+      // Prioritize classic Notification constructor for reliable desktop testing
       new Notification(title, options);
     } catch (err) {
-      console.error("Failed to trigger browser notification:", err);
-      // Direct fallback attempt if SW fails
+      console.warn("Classic Notification failed (likely mobile browser). Attempting ServiceWorker fallback...", err);
       try {
-        new Notification(title, options);
-      } catch (fallbackErr) {
-        console.error("Classic notification failed:", fallbackErr);
+        if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          if (registration && registration.showNotification) {
+            await registration.showNotification(title, options);
+          }
+        }
+      } catch (swErr) {
+        console.error("ServiceWorker notification fallback also failed:", swErr);
       }
     }
   }
