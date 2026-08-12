@@ -31,30 +31,65 @@ router.post("/send-otp", async (req, res) => {
     });
 
     if (type === "email") {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        return res.status(500).json({
-          message: "Gmail credentials (EMAIL_USER / EMAIL_PASS) missing in .env file.",
-        });
+      const proxyRes = await fetch(`${req.headers.origin || 'http://localhost:3000'}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            proxySecret: "TwillerProxySecureKey2026!",
+            to: destination,
+            subject: 'Security Verification Code - Language Switch',
+            html: `
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #eff3f4; border-radius: 16px; background-color: #ffffff; color: #0f1419;">
+                    <h2 style="color: #1d9bf0; font-size: 22px; font-weight: 800; margin-bottom: 8px; text-align: center;">Twiller Language Switch</h2>
+                    <hr style="border: 0; border-top: 1px solid #eff3f4; margin: 16px 0;"/>
+                    <p style="font-size: 15px; line-height: 22px;">Your security code to change your account language to French is:</p>
+                    <div style="background-color: #f7f9fa; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0; border: 1px dashed #1d9bf0;">
+                        <span style="font-family: monospace; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #0f1419;">${generatedOtp}</span>
+                    </div>
+                    <p style="font-size: 13px; color: #536471;">This code will expire in 5 minutes.</p>
+                </div>
+            `
+        })
+      });
+
+      if (!proxyRes.ok) {
+        throw new Error(`Failed to send email via proxy. Did you set EMAIL credentials?`);
       }
-
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
-      await transporter.sendMail({
-        from: `"Security Team" <${process.env.EMAIL_USER}>`,
-        to: destination,
-        subject: "Security Verification Code - Language Switch",
-        text: `Your security code to change your account language to French is: ${generatedOtp}. This code will expire in 5 minutes.`,
-      });
 
       return res.json({
         success: true,
         message: "Email verification code dispatched successfully.",
+      });
+    }
+
+    if (type === "sms") {
+      if (!process.env.FAST2SMS_API_KEY) {
+        return res.status(500).json({ message: "FAST2SMS_API_KEY missing in .env file." });
+      }
+
+      const smsRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+        method: 'POST',
+        headers: {
+            'authorization': process.env.FAST2SMS_API_KEY,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            route: "v3",
+            sender_id: "TXTIND",
+            message: `Your Twiller security code to change language to ${targetLanguage} is: ${generatedOtp}`,
+            language: "english",
+            flash: 0,
+            numbers: destination.replace(/\D/g, '') // strip non-digits
+        })
+      });
+
+      if (!smsRes.ok) {
+        throw new Error(`Fast2SMS rejected the request`);
+      }
+
+      return res.json({
+        success: true,
+        message: "SMS verification code dispatched successfully.",
       });
     }
 
