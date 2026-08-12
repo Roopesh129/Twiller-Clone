@@ -81,8 +81,8 @@ app.post('/api/upload-image', uploadImage.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image uploaded' });
   }
-  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
-  const imageUrl = `${serverUrl}/uploads/images/${req.file.filename}`;
+  // Return a relative path so the frontend can properly prepend NEXT_PUBLIC_API_URL
+  const imageUrl = `/uploads/images/${req.file.filename}`;
   res.status(200).json({ url: imageUrl });
 });
 
