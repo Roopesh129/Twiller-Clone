@@ -123,7 +123,7 @@ export default function AudioTweetCard({
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     const cleanPath = url.startsWith("/") ? url : `/${url}`;
-    const backendPort = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+    const backendPort = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     return `${backendPort}${cleanPath}`;
   };
 
