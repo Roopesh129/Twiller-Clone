@@ -6,6 +6,7 @@ import TweetCard from "./TweetCard";
 import TweetComposer from "./TweetComposer";
 import axiosInstance from "@/lib/axiosInstance";
 import { checkAndTriggerNotification } from "@/lib/notificationManager";
+import { useAuth } from "@/context/AuthContext";
 
 export interface Tweet {
   _id: string;
@@ -30,6 +31,7 @@ export interface Tweet {
 }
 
 const Feed = () => {
+  const { user } = useAuth();
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setloading] = useState(false);
 
@@ -83,9 +85,10 @@ const Feed = () => {
 
     const authorName = tweet.author?.displayName || tweet.author?.username || "User";
 
-    const userNotificationsEnabled = typeof window !== "undefined"
-      ? localStorage.getItem("userNotificationsEnabled") === "true"
-      : false;
+    const isEnabledLocal = typeof window !== "undefined" ? localStorage.getItem("userNotificationsEnabled") : null;
+    const userNotificationsEnabled = isEnabledLocal !== null 
+      ? isEnabledLocal === "true" 
+      : ((user as any)?.notificationsEnabled ?? true);
 
     checkAndTriggerNotification(
       tweet.content || "",
