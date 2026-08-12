@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, ArrowLeft, Smartphone, Mail } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage, LanguageCode } from "@/context/LanguageContext";
 import { Button } from "./ui/button";
 import axiosInstance from "@/lib/axiosInstance";
 import { auth } from "@/context/firebase";
