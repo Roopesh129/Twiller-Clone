@@ -30,6 +30,7 @@ interface AudioTweetProps {
   isRetweet?: boolean;
   onLike?: () => void;
   onRetweet?: () => void;
+  onReply?: () => void;
 }
 
 export default function AudioTweetCard({
@@ -48,6 +49,7 @@ export default function AudioTweetCard({
   isRetweet = false,
   onLike,
   onRetweet,
+  onReply,
 }: AudioTweetProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -137,7 +139,7 @@ export default function AudioTweetCard({
           {/* Avatar with Voice Ring Indicator */}
           <div className="relative shrink-0">
             <Avatar className="h-12 w-12 ">
-              <AvatarImage src={authorAvatar} alt={authorDisplayName} />
+              <AvatarImage src={getAudioSource(authorAvatar || "")} alt={authorDisplayName} />
               <AvatarFallback>{authorDisplayName.charAt(0)}</AvatarFallback>
             </Avatar>
             {isPlaying && (
@@ -228,6 +230,10 @@ export default function AudioTweetCard({
                 variant="ghost"
                 size="sm"
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-sky-500/10 text-muted-foreground hover:text-sky-500 group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReply?.();
+                }}
               >
                 <MessageCircle className="h-5 w-5 group-hover:text-sky-500" />
                 <span className="text-sm">{formatNumber(comments)}</span>

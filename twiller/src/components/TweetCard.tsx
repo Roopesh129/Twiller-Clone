@@ -16,6 +16,13 @@ import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
 import AudioTweetCard from "./AudioTweetCard";
 
+const getMediaUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 export default function TweetCard({ tweet }: any) {
   const { user } = useAuth();
   const [tweetstate, settweetstate] = useState(tweet);
@@ -142,23 +149,83 @@ export default function TweetCard({ tweet }: any) {
 
   if (tweetstate.mediaType === "audio" || tweetstate.audioUrl) {
     return (
-      <AudioTweetCard
-        tweetId={tweetstate._id}
-        authorDisplayName={authorDisplayName}
-        authorUsername={authorUsername}
-        authorAvatar={tweetstate.author?.avatar}
-        content={tweetstate.content}
-        audioUrl={tweetstate.audioUrl}
-        audioDuration={tweetstate.audioDuration || 0}
-        createdAt={getFormattedDate(tweetstate.timestamp || tweetstate.createdAt)}
-        likes={tweetstate.likes}
-        retweets={tweetstate.retweets}
-        comments={tweetstate.comments}
-        isLiked={isLiked}
-        isRetweet={isRetweet}
-        onLike={() => likeTweet(tweetstate._id)}
-        onRetweet={() => retweetTweet(tweetstate._id)}
-      />
+      <>
+        <AudioTweetCard
+          tweetId={tweetstate._id}
+          authorDisplayName={authorDisplayName}
+          authorUsername={authorUsername}
+          authorAvatar={tweetstate.author?.avatar}
+          content={tweetstate.content}
+          audioUrl={tweetstate.audioUrl}
+          audioDuration={tweetstate.audioDuration || 0}
+          createdAt={getFormattedDate(tweetstate.timestamp || tweetstate.createdAt)}
+          likes={tweetstate.likes}
+          retweets={tweetstate.retweets}
+          comments={tweetstate.comments}
+          isLiked={isLiked}
+          isRetweet={isRetweet}
+          onLike={() => likeTweet(tweetstate._id)}
+          onRetweet={() => retweetTweet(tweetstate._id)}
+          onReply={() => {
+            setReplyText(`@${authorUsername} `);
+            setShowReplyModal(true);
+          }}
+        />
+        {showReplyModal && (
+          <div 
+            className="fixed inset-0 z-[150] flex items-start justify-center bg-black/40 backdrop-blur-sm sm:items-center p-3 sm:p-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowReplyModal(false);
+            }}
+          >
+            <div 
+              className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+                <button 
+                  onClick={() => setShowReplyModal(false)}
+                  className="p-2 hover:bg-accent rounded-full transition-colors -ml-2"
+                >
+                  <X className="h-5 w-5 text-foreground" />
+                </button>
+                <Button 
+                  onClick={submitReply}
+                  disabled={!replyText.trim() || isReplying}
+                  className={`rounded-full px-5 font-bold h-8 transition-opacity ${
+                    !replyText.trim() 
+                      ? "bg-[#C4C4C4] text-white opacity-70 cursor-not-allowed hover:bg-[#C4C4C4]" 
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                >
+                  Reply
+                </Button>
+              </div>
+
+              <div className="px-4 pt-4 pb-2 flex gap-3">
+                <div className="flex flex-col items-center shrink-0">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                    <AvatarImage src={getMediaUrl(user?.avatar)} alt={user?.displayName || "User"} />
+                    <AvatarFallback className="bg-slate-300 text-slate-600 font-bold text-sm sm:text-base">
+                      {user?.displayName?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="flex-1 min-w-0 pt-1">
+                  <textarea
+                    placeholder="Post your reply"
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    className="w-full bg-transparent text-foreground text-lg sm:text-xl outline-none resize-none overflow-hidden placeholder-muted-foreground/70 min-h-[120px]"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -168,7 +235,7 @@ export default function TweetCard({ tweet }: any) {
         <div className="flex space-x-3">
           
           <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 mt-1">
-            <AvatarImage src={tweetstate.author?.avatar} alt={authorDisplayName} />
+            <AvatarImage src={getMediaUrl(tweetstate.author?.avatar)} alt={authorDisplayName} />
             <AvatarFallback className="bg-slate-300 text-slate-600 font-bold text-xs sm:text-sm">
               {authorDisplayName.charAt(0)}
             </AvatarFallback>
@@ -209,7 +276,7 @@ export default function TweetCard({ tweet }: any) {
             {tweetstate.image && (
               <div className="mb-3 rounded-2xl overflow-hidden border border-border">
                 <img
-                  src={tweetstate.image}
+                  src={getMediaUrl(tweetstate.image)}
                   alt="Tweet image"
                   className="w-full h-auto max-h-[510px] object-cover"
                 />
