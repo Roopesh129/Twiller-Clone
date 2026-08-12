@@ -36,6 +36,15 @@ export default function TweetCard({ tweet }: any) {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isReplying, setIsReplying] = useState(false);
+  const [replyingToReplyId, setReplyingToReplyId] = useState<string | null>(null);
+  const [replyingToUsername, setReplyingToUsername] = useState<string | null>(null);
+
+  const handleCloseModal = () => {
+    setShowReplyModal(false);
+    setReplyingToReplyId(null);
+    setReplyingToUsername(null);
+    setReplyText("");
+  };
 
   // OPTIMISTIC UPDATE: Like
   const likeTweet = async (tweetId: string) => {
@@ -101,28 +110,111 @@ export default function TweetCard({ tweet }: any) {
       comments: (prev.comments || 0) + 1
     }));
     
-    // 2. Close modal & reset text instantly for snappy feel
-    setShowReplyModal(false);
     const textToSend = replyText;
+    const targetReplyId = replyingToReplyId;
+    
+    // 2. Clear states for snappy feel
     setReplyText("");
+    setReplyingToReplyId(null);
+    setReplyingToUsername(null);
     setIsReplying(true);
 
-    // 3. Perform backend submission in the background
+    if (!targetReplyId) {
+      setShowReplyModal(false); // Close only for main replies, like before
+    }
+
     try {
-      const res = await axiosInstance.post(`/comment/${tweetstate._id}`, {
-        userId: user?._id,
-        content: textToSend,
-      });
-      settweetstate(res.data);
+      if (targetReplyId) {
+        const res = await axiosInstance.post(`/comment/${tweetstate._id}/reply/${targetReplyId}`, {
+          userId: user?._id,
+          content: textToSend,
+        });
+        settweetstate(res.data);
+      } else {
+        const res = await axiosInstance.post(`/comment/${tweetstate._id}`, {
+          userId: user?._id,
+          content: textToSend,
+        });
+        settweetstate(res.data);
+      }
     } catch (error) {
       console.error("Reply failed", error);
-      // Revert optimistic update on failure
       settweetstate((prev: any) => ({
         ...prev,
         comments: Math.max(0, (prev.comments || 1) - 1)
       }));
     } finally {
       setIsReplying(false);
+    }
+  };
+
+  // OPTIMISTIC UPDATE: Like Reply
+  const likeReply = async (replyId: string) => {
+    const currentUserId = user?._id?.toString();
+    if (!currentUserId) return;
+
+    settweetstate((prev: any) => {
+      const newReplies = (prev.replies || []).map((reply: any) => {
+        if (reply._id === replyId) {
+          const likedByArray = (reply.likedBy || []).map((id: any) => id?.toString());
+          const currentlyLiked = likedByArray.includes(currentUserId);
+          const newLikedBy = currentlyLiked 
+            ? likedByArray.filter((id: string) => id !== currentUserId)
+            : [...likedByArray, currentUserId];
+          return {
+            ...reply,
+            likedBy: newLikedBy,
+            likes: currentlyLiked ? Math.max(0, (reply.likes || 1) - 1) : (reply.likes || 0) + 1,
+          };
+        }
+        return reply;
+      });
+      return { ...prev, replies: newReplies };
+    });
+
+    try {
+      const res = await axiosInstance.post(`/comment/${tweetstate._id}/like/${replyId}`, { userId: user?._id });
+      settweetstate(res.data);
+    } catch (error) {
+      console.error("Like reply failed", error);
+    }
+  };
+
+  // OPTIMISTIC UPDATE: Like Nested Reply
+  const likeNestedReply = async (replyId: string, nestedReplyId: string) => {
+    const currentUserId = user?._id?.toString();
+    if (!currentUserId) return;
+
+    settweetstate((prev: any) => {
+      const newReplies = (prev.replies || []).map((reply: any) => {
+        if (reply._id === replyId) {
+          const newNested = (reply.nestedReplies || []).map((nested: any) => {
+            if (nested._id === nestedReplyId) {
+              const likedByArray = (nested.likedBy || []).map((id: any) => id?.toString());
+              const currentlyLiked = likedByArray.includes(currentUserId);
+              const newLikedBy = currentlyLiked 
+                ? likedByArray.filter((id: string) => id !== currentUserId)
+                : [...likedByArray, currentUserId];
+              return {
+                ...nested,
+                likedBy: newLikedBy,
+                likes: currentlyLiked ? Math.max(0, (nested.likes || 1) - 1) : (nested.likes || 0) + 1,
+              };
+            }
+            return nested;
+          });
+          return { ...reply, nestedReplies: newNested };
+        }
+        return reply;
+      });
+      return { ...prev, replies: newReplies };
+    });
+
+    try {
+      const res = await axiosInstance.post(`/comment/${tweetstate._id}/nestedLike/${replyId}/${nestedReplyId}`, { userId: user?._id });
+      settweetstate(res.data);
+    } catch (error) {
+      console.error("Like nested reply failed", error);
     }
   };
 
@@ -154,16 +246,16 @@ export default function TweetCard({ tweet }: any) {
         className="fixed inset-0 z-[150] flex items-start justify-center bg-black/40 backdrop-blur-sm sm:items-center p-3 sm:p-4"
         onClick={(e) => {
           e.stopPropagation();
-          setShowReplyModal(false);
+          handleCloseModal();
         }}
       >
         <div 
-          className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col"
+          className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b border-border">
             <button 
-              onClick={() => setShowReplyModal(false)}
+              onClick={handleCloseModal}
               className="p-2 hover:bg-accent rounded-full transition-colors -ml-2"
             >
               <X className="h-5 w-5 text-foreground" />
@@ -181,7 +273,7 @@ export default function TweetCard({ tweet }: any) {
             </Button>
           </div>
 
-          <div className="px-4 pt-4 pb-2 flex gap-3">
+          <div className="px-4 pt-4 pb-2 flex gap-3 shrink-0">
             <div className="flex flex-col items-center shrink-0">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={getMediaUrl(user?.avatar)} alt={user?.displayName} />
@@ -192,8 +284,13 @@ export default function TweetCard({ tweet }: any) {
             </div>
 
             <div className="flex-1 min-w-0 pt-1 pb-4">
-              <div className="text-[15px] text-muted-foreground mb-3 truncate">
-                Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{authorUsername}</span>
+              <div className="text-[15px] text-muted-foreground mb-3 truncate flex items-center justify-between">
+                <span>Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{replyingToUsername || authorUsername}</span></span>
+                {replyingToReplyId && (
+                  <button onClick={() => { setReplyingToReplyId(null); setReplyingToUsername(null); }} className="text-xs hover:underline text-muted-foreground">
+                    Cancel reply
+                  </button>
+                )}
               </div>
               
               <textarea
@@ -207,34 +304,107 @@ export default function TweetCard({ tweet }: any) {
           </div>
 
           {/* RENDER PREVIOUS REPLIES IN MODAL */}
-          <div className="px-4 border-t border-border pt-4 pb-4 max-h-[300px] overflow-y-auto no-scrollbar bg-accent/10">
-            <h3 className="font-bold text-sm text-muted-foreground mb-4">Previous Replies</h3>
+          <div className="px-4 border-t border-border pt-4 pb-4 overflow-y-auto no-scrollbar bg-accent/10 flex-1 min-h-[300px]">
+            <h3 className="font-bold text-sm text-muted-foreground mb-4">Thread</h3>
             {(!tweetstate.replies || tweetstate.replies.length === 0) ? (
               <div className="text-center text-muted-foreground text-[14px] py-4">
                 No replies yet. Be the first to reply!
               </div>
             ) : (
-              <div className="space-y-4">
-                {[...tweetstate.replies].reverse().map((reply: any, idx: number) => (
-                  <div key={idx} className="flex gap-3">
-                    <Avatar className="w-8 h-8 shrink-0 mt-0.5">
-                      <AvatarImage src={getMediaUrl(reply.userId?.avatar) || `https://i.pravatar.cc/150?u=${reply.userId || idx}`} />
-                      <AvatarFallback className="bg-slate-300 text-slate-700 text-xs font-bold">
-                        {reply.userId?.displayName?.[0] || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-1 truncate w-full">
-                        <span className="font-bold text-[14px] text-foreground truncate">{reply.userId?.displayName || "User"}</span>
-                        <span className="text-muted-foreground text-[14px] truncate">@{reply.userId?.username || "user"}</span>
+              <div className="space-y-6">
+                {[...tweetstate.replies].reverse().map((reply: any, idx: number) => {
+                  const replyIsLiked = currentUserId ? (reply.likedBy || []).map((id:any)=>id?.toString()).includes(currentUserId) : false;
+                  
+                  return (
+                    <div key={reply._id || idx} className="flex flex-col gap-3">
+                      {/* Parent Reply */}
+                      <div className="flex gap-3">
+                        <Avatar className="w-8 h-8 shrink-0 mt-0.5">
+                          <AvatarImage src={getMediaUrl(reply.userId?.avatar) || `https://i.pravatar.cc/150?u=${reply.userId?._id || idx}`} />
+                          <AvatarFallback className="bg-slate-300 text-slate-700 text-xs font-bold">
+                            {reply.userId?.displayName?.[0] || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="flex items-center gap-1 truncate w-full">
+                            <span className="font-bold text-[14px] text-foreground truncate">{reply.userId?.displayName || "User"}</span>
+                            <span className="text-muted-foreground text-[14px] truncate">@{reply.userId?.username || "user"}</span>
+                          </div>
+                          <p className="text-[14px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
+                          
+                          {/* Parent Reply Actions */}
+                          <div className="flex items-center gap-4 mt-1 text-muted-foreground text-xs font-medium">
+                            <button 
+                              onClick={() => likeReply(reply._id)} 
+                              className={`flex items-center gap-1 hover:text-pink-600 transition-colors ${replyIsLiked ? 'text-pink-600' : ''}`}
+                            >
+                              <Heart className={`w-3.5 h-3.5 ${replyIsLiked ? 'fill-current' : ''}`} />
+                              <span>{reply.likes > 0 ? formatNumber(reply.likes) : ''}</span>
+                            </button>
+                            <button 
+                              onClick={() => { 
+                                setReplyingToReplyId(reply._id); 
+                                setReplyingToUsername(reply.userId?.username);
+                                setReplyText(`@${reply.userId?.username} `);
+                              }} 
+                              className="hover:text-foreground transition-colors"
+                            >
+                              Reply
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-[13px] text-muted-foreground mt-0.5 mb-1">
-                        Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{authorUsername}</span>
-                      </div>
-                      <p className="text-[14px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
+
+                      {/* Nested Replies */}
+                      {reply.nestedReplies && reply.nestedReplies.length > 0 && (
+                        <div className="ml-11 flex flex-col gap-4 border-l-2 border-border/50 pl-3">
+                          {reply.nestedReplies.map((nested: any, nIdx: number) => {
+                            const nestedIsLiked = currentUserId ? (nested.likedBy || []).map((id:any)=>id?.toString()).includes(currentUserId) : false;
+                            
+                            return (
+                              <div key={nested._id || nIdx} className="flex gap-3">
+                                <Avatar className="w-6 h-6 shrink-0 mt-0.5">
+                                  <AvatarImage src={getMediaUrl(nested.userId?.avatar) || `https://i.pravatar.cc/150?u=${nested.userId?._id || nIdx}`} />
+                                  <AvatarFallback className="bg-slate-300 text-slate-700 text-[10px] font-bold">
+                                    {nested.userId?.displayName?.[0] || "?"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <div className="flex items-center gap-1 truncate w-full">
+                                    <span className="font-bold text-[13px] text-foreground truncate">{nested.userId?.displayName || "User"}</span>
+                                    <span className="text-muted-foreground text-[13px] truncate">@{nested.userId?.username || "user"}</span>
+                                  </div>
+                                  <p className="text-[13px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{nested.content}</p>
+                                  
+                                  {/* Nested Reply Actions */}
+                                  <div className="flex items-center gap-4 mt-1 text-muted-foreground text-xs font-medium">
+                                    <button 
+                                      onClick={() => likeNestedReply(reply._id, nested._id)} 
+                                      className={`flex items-center gap-1 hover:text-pink-600 transition-colors ${nestedIsLiked ? 'text-pink-600' : ''}`}
+                                    >
+                                      <Heart className={`w-3 h-3 ${nestedIsLiked ? 'fill-current' : ''}`} />
+                                      <span>{nested.likes > 0 ? formatNumber(nested.likes) : ''}</span>
+                                    </button>
+                                    <button 
+                                      onClick={() => { 
+                                        setReplyingToReplyId(reply._id); // Still reply to the parent thread
+                                        setReplyingToUsername(nested.userId?.username);
+                                        setReplyText(`@${nested.userId?.username} `);
+                                      }} 
+                                      className="hover:text-foreground transition-colors"
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

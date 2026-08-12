@@ -47,9 +47,9 @@ app.use(
     ],
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(useragent.express());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/", paymentRoutes);
@@ -212,7 +212,15 @@ app.patch("/userupdate/:email", async (req, res) => {
 app.get("/post", async (req, res) => {
   try {
     const tweets = await Tweet.find()
-      .populate("author", "displayName username name avatar")
+      .populate("author", "displayName username name avatar verified")
+      .populate({
+        path: 'replies.userId',
+        select: 'displayName username avatar verified'
+      })
+      .populate({
+        path: 'replies.nestedReplies.userId',
+        select: 'displayName username avatar verified'
+      })
       .sort({ _id: -1 });
 
     return res.status(200).send(tweets);
@@ -482,13 +490,142 @@ app.post('/comment/:id', async (req, res) => {
 
     await tweet.save();
 
-    // CRITICAL: Populate author so frontend doesn't lose user data when rendering the updated TweetCard
+    // CRITICAL: Populate author and deeply populate replies so frontend doesn't lose user data
     await tweet.populate("author", "displayName username name avatar verified");
+    await tweet.populate({
+      path: 'replies.userId',
+      select: 'displayName username avatar verified'
+    });
+    await tweet.populate({
+      path: 'replies.nestedReplies.userId',
+      select: 'displayName username avatar verified'
+    });
 
     res.status(200).json(tweet);
 
   } catch (error) {
     console.error("Error commenting on tweet:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// ==========================================
+// LIKE A REPLY ROUTE
+// ==========================================
+app.post('/comment/:tweetId/like/:replyId', async (req, res) => {
+  try {
+    const { tweetId, replyId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) return res.status(404).json({ error: "Tweet not found" });
+
+    const reply = tweet.replies.id(replyId);
+    if (!reply) return res.status(404).json({ error: "Reply not found" });
+
+    const stringUserId = userId.toString();
+    const hasLiked = (reply.likedBy || []).map(id => id.toString()).includes(stringUserId);
+
+    if (hasLiked) {
+      reply.likedBy = (reply.likedBy || []).filter(id => id.toString() !== stringUserId);
+      reply.likes = Math.max(0, (reply.likes || 1) - 1);
+    } else {
+      reply.likedBy = [...(reply.likedBy || []), userId];
+      reply.likes = (reply.likes || 0) + 1;
+    }
+
+    await tweet.save();
+    
+    await tweet.populate("author", "displayName username name avatar verified");
+    await tweet.populate({ path: 'replies.userId', select: 'displayName username avatar verified' });
+    await tweet.populate({ path: 'replies.nestedReplies.userId', select: 'displayName username avatar verified' });
+
+    res.status(200).json(tweet);
+  } catch (error) {
+    console.error("Error liking reply:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// ==========================================
+// LIKE A NESTED REPLY ROUTE
+// ==========================================
+app.post('/comment/:tweetId/nestedLike/:replyId/:nestedReplyId', async (req, res) => {
+  try {
+    const { tweetId, replyId, nestedReplyId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) return res.status(404).json({ error: "Tweet not found" });
+
+    const reply = tweet.replies.id(replyId);
+    if (!reply) return res.status(404).json({ error: "Reply not found" });
+
+    const nestedReply = reply.nestedReplies.id(nestedReplyId);
+    if (!nestedReply) return res.status(404).json({ error: "Nested reply not found" });
+
+    const stringUserId = userId.toString();
+    const hasLiked = (nestedReply.likedBy || []).map(id => id.toString()).includes(stringUserId);
+
+    if (hasLiked) {
+      nestedReply.likedBy = (nestedReply.likedBy || []).filter(id => id.toString() !== stringUserId);
+      nestedReply.likes = Math.max(0, (nestedReply.likes || 1) - 1);
+    } else {
+      nestedReply.likedBy = [...(nestedReply.likedBy || []), userId];
+      nestedReply.likes = (nestedReply.likes || 0) + 1;
+    }
+
+    await tweet.save();
+    
+    await tweet.populate("author", "displayName username name avatar verified");
+    await tweet.populate({ path: 'replies.userId', select: 'displayName username avatar verified' });
+    await tweet.populate({ path: 'replies.nestedReplies.userId', select: 'displayName username avatar verified' });
+
+    res.status(200).json(tweet);
+  } catch (error) {
+    console.error("Error liking nested reply:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// ==========================================
+// NESTED REPLY ROUTE
+// ==========================================
+app.post('/comment/:tweetId/reply/:replyId', async (req, res) => {
+  try {
+    const { tweetId, replyId } = req.params;
+    const { userId, content } = req.body;
+
+    if (!userId || !content) return res.status(400).json({ error: "Missing userId or content" });
+
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) return res.status(404).json({ error: "Tweet not found" });
+
+    const reply = tweet.replies.id(replyId);
+    if (!reply) return res.status(404).json({ error: "Reply not found" });
+
+    const newNestedReply = {
+      userId,
+      content,
+      createdAt: new Date()
+    };
+
+    reply.nestedReplies = [...(reply.nestedReplies || []), newNestedReply];
+    tweet.comments = (tweet.comments || 0) + 1; // Count nested reply as a comment too
+
+    await tweet.save();
+
+    await tweet.populate("author", "displayName username name avatar verified");
+    await tweet.populate({ path: 'replies.userId', select: 'displayName username avatar verified' });
+    await tweet.populate({ path: 'replies.nestedReplies.userId', select: 'displayName username avatar verified' });
+
+    res.status(200).json(tweet);
+  } catch (error) {
+    console.error("Error creating nested reply:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
