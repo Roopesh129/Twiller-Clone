@@ -331,7 +331,7 @@ export default function RightSidebar() {
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current"><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"/></svg>
             </button>
 
-            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-14 md:px-16 flex flex-col items-center pb-40 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-14 md:px-16 flex flex-col items-center pb-12 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               
               <h2 className="text-[28px] sm:text-[34px] md:text-[40px] font-black tracking-tight text-center text-foreground mb-8 max-w-3xl leading-tight">
                 Choose the subscription plan that fits your profile
@@ -423,14 +423,14 @@ export default function RightSidebar() {
                 ))}
               </div>
 
-              <p className="text-amber-500 text-xs text-center font-bold mt-12 bg-amber-500/10 border border-amber-500/20 py-2.5 px-8 rounded-full max-w-xl flex items-center justify-center gap-2">
-                <Clock className="w-4 h-4 shrink-0" />
+              <p className="text-amber-500 text-sm text-center font-bold mt-16 mb-4 bg-amber-500/10 border border-amber-500/20 py-3 px-8 rounded-full max-w-2xl flex items-center justify-center gap-2 shadow-sm">
+                <AlertCircle className="w-5 h-5 shrink-0" />
                 <span>Task Gateway Window Constraint: Transactions check active server restrictions between 10:00 AM - 11:00 AM IST.</span>
               </p>
             </div>
 
             {/* Sticky summary bottom panel */}
-            <div className="absolute bottom-0 inset-x-0 bg-background border-t border-border p-6 md:px-16 flex flex-col sm:flex-row items-center justify-between gap-5 z-40 bg-background/95 backdrop-blur-md">
+            <div className="w-full shrink-0 border-t border-border p-6 md:px-16 flex flex-col sm:flex-row items-center justify-between gap-5 z-40 bg-background/95 backdrop-blur-md">
               <div className="text-center sm:text-left">
                 <div className="text-xl font-black text-foreground flex items-baseline justify-center sm:justify-start gap-1">
                   <span>{activePlanDetails.name} Access Premium</span>
