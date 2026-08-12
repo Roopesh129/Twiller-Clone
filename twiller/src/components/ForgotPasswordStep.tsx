@@ -1,24 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
-import { Loader2, X, Twitter, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound } from "lucide-react";
 
 interface ForgotPasswordStepProps {
   onClose: () => void;
 }
 
 export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [identity, setIdentity] = useState("");
-  const [resetMethod, setResetMethod] = useState<"auto" | "manual">("auto");
   const [manualPassword, setManualPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
   const [isLoading, setIsLoading] = useState(false);
+  const [actionType, setActionType] = useState<"manual" | "auto" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const executeResetRequest = async (passwordOverride?: string) => {
+    if (!identity.trim()) {
+      setErrorMessage("Please enter your registered email or phone number first.");
+      return;
+    }
+
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsLoading(true);
@@ -27,7 +30,9 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
       const backendUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
       const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ 
           identity: identity.trim(),
           manualPassword: passwordOverride || null
@@ -41,220 +46,155 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
       }
 
       setSuccessMessage(data.message);
+      setIdentity("");
+      setManualPassword("");
+      setConfirmPassword("");
       
       setTimeout(() => {
         onClose();
       }, 3500);
 
     } catch (err: any) {
-      setErrorMessage(err.message || "An unexpected network error occurred.");
+      setErrorMessage(err.message || "An unexpected network execution error occurred.");
     } finally {
       setIsLoading(false);
+      setActionType(null);
     }
   };
 
-  const handleNextStep1 = () => {
-    if (!identity.trim()) return;
-    setStep(2);
-    setErrorMessage(null);
-  };
-
-  const handleNextStep2 = () => {
-    if (resetMethod === "auto") {
-      executeResetRequest();
-    } else {
-      setStep(3);
-    }
-  };
-
-  const handleSubmitStep3 = (e: React.FormEvent) => {
+  const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!manualPassword.trim() || !confirmPassword.trim()) {
-      setErrorMessage("Please complete both password fields.");
+      setErrorMessage("Please complete both password fields to modify manually.");
       return;
     }
+
     if (manualPassword !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setErrorMessage("Passwords do not match. Please verify your entries.");
       return;
     }
+
+    setActionType("manual");
     executeResetRequest(manualPassword.trim());
   };
 
+  const handleAutoGenerateClick = () => {
+    setActionType("auto");
+    executeResetRequest();
+  };
+
   return (
-    <div className="w-full text-white animate-in fade-in duration-200 min-h-[400px] flex flex-col relative bg-black">
+    <div className="w-full text-white animate-in fade-in duration-200">
+      <h2 className="text-3xl font-black mb-2 tracking-tight">
+        Reset password
+      </h2>
       
-      {/* Twitter Modal Header */}
-      <div className="flex items-center justify-between pb-6">
-        <button 
-          onClick={onClose}
-          className="p-2 hover:bg-zinc-800/80 rounded-full transition-colors absolute -left-2 -top-2"
-        >
-          <X className="w-5 h-5 text-white" />
-        </button>
-        <div className="w-full flex justify-center">
-          <Twitter className="w-8 h-8 text-white fill-current" />
+      <p className="text-sm text-zinc-400 mb-6 leading-normal">
+        Enter your details to manually change your password, or use the auto-generate button to have a secure random credentials set sent directly to your inbox.
+      </p>
+
+      {/* Operational Feedback Layers */}
+      {errorMessage && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="leading-tight">{errorMessage}</span>
         </div>
-      </div>
+      )}
 
-      <div className="flex-1 flex flex-col px-1 sm:px-4 pb-8 pt-4">
-        
-        {/* Step 1: Find Account */}
-        {step === 1 && (
-          <div className="flex-1 flex flex-col h-full animate-in slide-in-from-right-4 duration-300">
-            <h2 className="text-[31px] leading-9 font-bold mb-3 text-white">Find your Twiller account</h2>
-            <p className="text-[15px] text-[#71767b] mb-8 leading-normal">
-              Enter the email, phone number, or username associated with your account to change your password.
-            </p>
+      {successMessage && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+          <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="leading-tight">{successMessage} Redirecting...</span>
+        </div>
+      )}
 
-            <div className="relative group mb-auto">
-              <input
-                type="text"
-                className="w-full bg-black border border-zinc-700 focus:border-[#1d9bf0] rounded-[4px] px-2 pt-6 pb-2 text-[17px] text-white focus:outline-none transition-colors peer focus:ring-1 focus:ring-[#1d9bf0]"
-                placeholder=" "
-                value={identity}
-                onChange={(e) => setIdentity(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && identity.trim() && handleNextStep1()}
-              />
-              <label className="absolute left-2 top-4 text-[#71767b] text-[17px] transition-all peer-focus:top-1.5 peer-focus:text-[13px] peer-focus:text-[#1d9bf0] peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-[13px] pointer-events-none">
-                Email, phone number, or username
-              </label>
-            </div>
+      <form onSubmit={handleManualSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+            Email or Phone Number
+          </label>
+          <input
+            type="text"
+            required
+            disabled={isLoading || !!successMessage}
+            placeholder="Enter email address or phone number"
+            className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+            value={identity}
+            onChange={(e) => setIdentity(e.target.value)}
+          />
+        </div>
 
-            <button
-              onClick={handleNextStep1}
-              disabled={!identity.trim()}
-              className="mt-8 w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-full text-[17px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        )}
-
-        {/* Step 2: Choose Method */}
-        {step === 2 && (
-          <div className="flex-1 flex flex-col h-full animate-in slide-in-from-right-4 duration-300">
-            <h2 className="text-[31px] leading-9 font-bold mb-6 text-white">How do you want to reset your password?</h2>
-            
-            {errorMessage && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-md text-[15px] mb-6 flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-            
-            {successMessage && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 p-3 rounded-md text-[15px] mb-6 flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
-            <div className="space-y-4 mb-auto">
-              <label className={`block border ${resetMethod === 'auto' ? 'border-[#1d9bf0]' : 'border-zinc-700'} rounded-[4px] p-4 cursor-pointer hover:bg-zinc-900/50 transition-colors`}>
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">
-                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${resetMethod === 'auto' ? 'border-[#1d9bf0] bg-[#1d9bf0]' : 'border-[#71767b] bg-transparent'}`}>
-                        {resetMethod === 'auto' && (
-                            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-white"><path d="M9.64 18.952l-5.55-4.861 1.317-1.504 3.951 3.459 8.459-10.948L19.4 6.32 9.64 18.952z"></path></svg>
-                        )}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-bold text-[17px] text-white">Auto-generate a secure password</div>
-                    <div className="text-[15px] text-[#71767b] mt-1 leading-snug">We will generate a random alphabetical password and send it to your registered email or phone via SMS.</div>
-                  </div>
-                </div>
-              </label>
-
-              <label className={`block border ${resetMethod === 'manual' ? 'border-[#1d9bf0]' : 'border-zinc-700'} rounded-[4px] p-4 cursor-pointer hover:bg-zinc-900/50 transition-colors`}>
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">
-                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${resetMethod === 'manual' ? 'border-[#1d9bf0] bg-[#1d9bf0]' : 'border-[#71767b] bg-transparent'}`}>
-                        {resetMethod === 'manual' && (
-                            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-white"><path d="M9.64 18.952l-5.55-4.861 1.317-1.504 3.951 3.459 8.459-10.948L19.4 6.32 9.64 18.952z"></path></svg>
-                        )}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-bold text-[17px] text-white">Create a custom password manually</div>
-                    <div className="text-[15px] text-[#71767b] mt-1 leading-snug">Choose a new password right now. Best if you want to set something easy to remember immediately.</div>
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <button
-              onClick={handleNextStep2}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+              New Password
+            </label>
+            <input
+              type="password"
               disabled={isLoading || !!successMessage}
-              className="mt-8 w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-full text-[17px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-            >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Next"}
-            </button>
+              placeholder="New custom password"
+              className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+              value={manualPassword}
+              onChange={(e) => setManualPassword(e.target.value)}
+            />
           </div>
-        )}
 
-        {/* Step 3: Enter Manual Password */}
-        {step === 3 && (
-          <form onSubmit={handleSubmitStep3} className="flex-1 flex flex-col h-full animate-in slide-in-from-right-4 duration-300">
-            <h2 className="text-[31px] leading-9 font-bold mb-3 text-white">Choose a new password</h2>
-            <p className="text-[15px] text-[#71767b] mb-8 leading-normal">
-              Make sure your new password is 8 characters or more. Try including numbers, letters, and punctuation marks for a strong password.
-            </p>
+          <div>
+            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              disabled={isLoading || !!successMessage}
+              placeholder="Confirm new password"
+              className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+        </div>
 
-            {errorMessage && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-md text-[15px] mb-6 flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
+        <div className="pt-4 space-y-3">
+          {/* Action A: Unified Manual Change Button */}
+          <button
+            type="submit"
+            disabled={isLoading || !!successMessage || !identity.trim() || !manualPassword.trim() || !confirmPassword.trim()}
+            className="w-full bg-[#eff3f4] hover:bg-[#d7dbdc] text-[#0f1419] font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-zinc-700 disabled:text-zinc-400 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isLoading && actionType === "manual" ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <KeyRound className="w-5 h-5" />
             )}
-            
-            {successMessage && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 p-3 rounded-md text-[15px] mb-6 flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <span>{successMessage}</span>
-              </div>
+            Change Password
+          </button>
+
+          {/* Action B: Direct Utility Auto-Generation Alternative */}
+          <button
+            type="button"
+            disabled={isLoading || !!successMessage || !identity.trim()}
+            onClick={handleAutoGenerateClick}
+            className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isLoading && actionType === "auto" ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Sparkles className="w-5 h-5" />
             )}
+            Auto-Generate & Email Password Instead
+          </button>
 
-            <div className="space-y-6 mb-auto">
-              <div className="relative group">
-                <input
-                  type="password"
-                  disabled={isLoading || !!successMessage}
-                  className="w-full bg-black border border-zinc-700 focus:border-[#1d9bf0] rounded-[4px] px-2 pt-6 pb-2 text-[17px] text-white focus:outline-none transition-colors peer focus:ring-1 focus:ring-[#1d9bf0]"
-                  placeholder=" "
-                  value={manualPassword}
-                  onChange={(e) => setManualPassword(e.target.value)}
-                />
-                <label className="absolute left-2 top-4 text-[#71767b] text-[17px] transition-all peer-focus:top-1.5 peer-focus:text-[13px] peer-focus:text-[#1d9bf0] peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-[13px] pointer-events-none">
-                  New password
-                </label>
-              </div>
-
-              <div className="relative group">
-                <input
-                  type="password"
-                  disabled={isLoading || !!successMessage}
-                  className="w-full bg-black border border-zinc-700 focus:border-[#1d9bf0] rounded-[4px] px-2 pt-6 pb-2 text-[17px] text-white focus:outline-none transition-colors peer focus:ring-1 focus:ring-[#1d9bf0]"
-                  placeholder=" "
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <label className="absolute left-2 top-4 text-[#71767b] text-[17px] transition-all peer-focus:top-1.5 peer-focus:text-[13px] peer-focus:text-[#1d9bf0] peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-[13px] pointer-events-none">
-                  Confirm password
-                </label>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || !!successMessage || !manualPassword.trim() || !confirmPassword.trim()}
-              className="mt-8 w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-full text-[17px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-            >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Change password"}
-            </button>
-          </form>
-        )}
-      </div>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={onClose}
+            className="w-full bg-transparent hover:bg-zinc-900 text-zinc-400 py-2.5 rounded-full text-sm font-medium transition-colors duration-200 border border-zinc-800 cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
