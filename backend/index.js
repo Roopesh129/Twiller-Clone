@@ -23,6 +23,7 @@ import Tweet from "./models/tweet.js";
 
 // 3. Local module routes
 import authRoutes from "./routes/auth.js";
+import paymentRoutes from "./routes/payment.js";
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use(useragent.express());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
+app.use("/", paymentRoutes);
 // Serve uploaded audio static assets
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/user', userRouter);
