@@ -54,7 +54,6 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
     { name: 'Follow', icon: UserPlus, current: currentPage === 'follow', page: 'follow' },
     { name: 'Messages', icon: Mail, current: currentPage === 'messages', page: 'messages' },
     { name: t('bookmarks'), icon: Bookmark, current: currentPage === 'bookmarks', page: 'bookmarks' },
-    { name: 'Creator Studio', icon: Rocket, current: currentPage === 'creator', page: 'creator' },
     { name: 'Subscribe', icon: BadgeCheck, current: currentPage === 'subscribe', page: 'subscribe' },
     { name: t('profile'), icon: User, current: currentPage === 'profile', page: 'profile' },
     { name: t('more'), icon: MoreHorizontal, current: currentPage === 'more', page: 'more' },
