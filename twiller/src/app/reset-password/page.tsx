@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound, ArrowLeft, Twitter } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound, ArrowLeft } from 'lucide-react';
 
 export default function DedicatedForgotPasswordPage() {
     const router = useRouter();
@@ -99,9 +99,11 @@ export default function DedicatedForgotPasswordPage() {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
 
-                    {/* Centered Iconic Premium Branding Asset (Original Twitter Bird) */}
+                    {/* Centered Iconic Premium Branding Asset (X Logo) */}
                     <div className="flex justify-center pb-9">
-                        <Twitter className="h-10 w-10 text-[#1d9bf0] fill-current" />
+                        <svg className="h-[40px] w-[40px] fill-black" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                        </svg>
                     </div>
 
                     <div className="w-full animate-in fade-in duration-200">
