@@ -153,16 +153,14 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
               <label className={`block border ${resetMethod === 'auto' ? 'border-[#1d9bf0]' : 'border-zinc-700'} rounded-[4px] p-4 cursor-pointer hover:bg-zinc-900/50 transition-colors`}>
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">
-                    <input 
-                      type="radio" 
-                      name="resetMethod" 
-                      checked={resetMethod === 'auto'}
-                      onChange={() => setResetMethod('auto')}
-                      className="w-4 h-4 text-[#1d9bf0] focus:ring-[#1d9bf0] bg-black border-zinc-700 focus:ring-offset-black"
-                    />
+                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${resetMethod === 'auto' ? 'border-[#1d9bf0] bg-[#1d9bf0]' : 'border-[#71767b] bg-transparent'}`}>
+                        {resetMethod === 'auto' && (
+                            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-white"><path d="M9.64 18.952l-5.55-4.861 1.317-1.504 3.951 3.459 8.459-10.948L19.4 6.32 9.64 18.952z"></path></svg>
+                        )}
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-bold text-[17px]">Auto-generate a secure password</div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[17px] text-white">Auto-generate a secure password</div>
                     <div className="text-[15px] text-[#71767b] mt-1 leading-snug">We will generate a random alphabetical password and send it to your registered email or phone via SMS.</div>
                   </div>
                 </div>
@@ -171,16 +169,14 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
               <label className={`block border ${resetMethod === 'manual' ? 'border-[#1d9bf0]' : 'border-zinc-700'} rounded-[4px] p-4 cursor-pointer hover:bg-zinc-900/50 transition-colors`}>
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">
-                    <input 
-                      type="radio" 
-                      name="resetMethod" 
-                      checked={resetMethod === 'manual'}
-                      onChange={() => setResetMethod('manual')}
-                      className="w-4 h-4 text-[#1d9bf0] focus:ring-[#1d9bf0] bg-black border-zinc-700 focus:ring-offset-black"
-                    />
+                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${resetMethod === 'manual' ? 'border-[#1d9bf0] bg-[#1d9bf0]' : 'border-[#71767b] bg-transparent'}`}>
+                        {resetMethod === 'manual' && (
+                            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-white"><path d="M9.64 18.952l-5.55-4.861 1.317-1.504 3.951 3.459 8.459-10.948L19.4 6.32 9.64 18.952z"></path></svg>
+                        )}
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-bold text-[17px]">Create a custom password manually</div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[17px] text-white">Create a custom password manually</div>
                     <div className="text-[15px] text-[#71767b] mt-1 leading-snug">Choose a new password right now. Best if you want to set something easy to remember immediately.</div>
                   </div>
                 </div>
