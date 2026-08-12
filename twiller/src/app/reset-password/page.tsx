@@ -2,53 +2,90 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound, ArrowLeft } from 'lucide-react';
 
 export default function DedicatedForgotPasswordPage() {
     const router = useRouter();
-    const [identity, setIdentity] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [identity, setIdentity] = useState("");
+    const [manualPassword, setManualPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    
+    const [isLoading, setIsLoading] = useState(false);
+    const [actionType, setActionType] = useState<"manual" | "auto" | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-        setSuccess(null);
-        setLoading(true);
+    const executeResetRequest = async (passwordOverride?: string) => {
+        if (!identity.trim()) {
+            setErrorMessage("Please enter your registered email or phone number first.");
+            return;
+        }
+
+        setErrorMessage(null);
+        setSuccessMessage(null);
+        setIsLoading(true);
 
         try {
             const backendUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
             const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ identity }), 
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    identity: identity.trim(),
+                    manualPassword: passwordOverride || null
+                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                // If the user tries more than once per day, display the mandatory system message
-                setError(data.error || 'Something went wrong.');
-            } else {
-                setSuccess(data.message || 'A secure alpha-only temporary password has been successfully configured.');
-                setIdentity('');
-
-                // Smooth internal redirection sequence back to the gateway login
-                setTimeout(() => {
-                    router.push('/'); 
-                }, 3000);
+                throw new Error(data.error || "Failed to process recovery sequence.");
             }
-        } catch (err) {
-            setError('Failed to connect to the authentication server.');
+
+            setSuccessMessage(data.message);
+            setIdentity("");
+            setManualPassword("");
+            setConfirmPassword("");
+            
+            setTimeout(() => {
+                router.push('/');
+            }, 3500);
+
+        } catch (err: any) {
+            setErrorMessage(err.message || "An unexpected network execution error occurred.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
+            setActionType(null);
         }
+    };
+
+    const handleManualSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!manualPassword.trim() || !confirmPassword.trim()) {
+            setErrorMessage("Please complete both password fields to modify manually.");
+            return;
+        }
+
+        if (manualPassword !== confirmPassword) {
+            setErrorMessage("Passwords do not match. Please verify your entries.");
+            return;
+        }
+
+        setActionType("manual");
+        executeResetRequest(manualPassword.trim());
+    };
+
+    const handleAutoGenerateClick = () => {
+        setActionType("auto");
+        executeResetRequest();
     };
 
     return (
         <div className="flex justify-center min-h-screen bg-black text-[#e7e9ea] antialiased select-none font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif]">
-            <div className="w-full max-w-[600px] min-h-screen flex flex-col justify-between p-4 sm:p-6 md:p-8 relative">
+            <div className="w-full max-w-[600px] min-h-screen flex flex-col p-4 sm:p-6 md:p-8 relative">
                 
                 {/* Upper Content Workspace */}
                 <div className="w-full max-w-[440px] mx-auto flex-1 flex flex-col justify-start pt-8">
@@ -69,79 +106,110 @@ export default function DedicatedForgotPasswordPage() {
                         </svg>
                     </div>
 
-                    {/* Title Content Header */}
-                    <div className="mb-6">
-                        <h1 className="text-[31px] font-black text-white tracking-tight leading-9 mb-2">
-                            Find your account
-                        </h1>
-                        <p className="text-[#71767b] text-[15px] font-medium leading-5">
-                            Enter the email address or phone number associated with your profile to request an automated account credential reset.
+                    <div className="w-full text-white animate-in fade-in duration-200">
+                        <h2 className="text-3xl font-black mb-2 tracking-tight">
+                            Reset password
+                        </h2>
+                        
+                        <p className="text-sm text-zinc-400 mb-6 leading-normal">
+                            Enter your details to manually change your password, or use the auto-generate button to have a secure random credentials set sent directly to your inbox.
                         </p>
+
+                        {/* Operational Feedback Layers */}
+                        {errorMessage && (
+                            <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span className="leading-tight">{errorMessage}</span>
+                            </div>
+                        )}
+
+                        {successMessage && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+                            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span className="leading-tight">{successMessage} Redirecting...</span>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleManualSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                    Email or Phone Number
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    disabled={isLoading || !!successMessage}
+                                    placeholder="Enter email address or phone number"
+                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    value={identity}
+                                    onChange={(e) => setIdentity(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                    New Password
+                                    </label>
+                                    <input
+                                    type="password"
+                                    disabled={isLoading || !!successMessage}
+                                    placeholder="New custom password"
+                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    value={manualPassword}
+                                    onChange={(e) => setManualPassword(e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                    Confirm New Password
+                                    </label>
+                                    <input
+                                    type="password"
+                                    disabled={isLoading || !!successMessage}
+                                    placeholder="Confirm new password"
+                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                                {/* Action A: Unified Manual Change Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || !!successMessage || !identity.trim() || !manualPassword.trim() || !confirmPassword.trim()}
+                                    className="w-full bg-[#eff3f4] hover:bg-[#d7dbdc] text-[#0f1419] font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-zinc-700 disabled:text-zinc-400 cursor-pointer disabled:cursor-not-allowed"
+                                >
+                                    {isLoading && actionType === "manual" ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                    <KeyRound className="w-5 h-5" />
+                                    )}
+                                    Change Password
+                                </button>
+
+                                {/* Action B: Direct Utility Auto-Generation Alternative */}
+                                <button
+                                    type="button"
+                                    disabled={isLoading || !!successMessage || !identity.trim()}
+                                    onClick={handleAutoGenerateClick}
+                                    className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                                >
+                                    {isLoading && actionType === "auto" ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                    <Sparkles className="w-5 h-5" />
+                                    )}
+                                    Auto-Generate & Email Password Instead
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    {/* Operational Performance Feedback Alerts */}
-                    {error && (
-                        <div className="bg-[#f4212e]/10 border border-[#f4212e]/30 text-[#f4212e] px-4 py-3.5 rounded-xl text-[15px] mb-5 font-bold flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                            <span className="leading-tight">{error}</span>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="bg-[#00ba7c]/10 border border-[#00ba7c]/30 text-[#00ba7c] p-4 rounded-xl text-[15px] mb-5 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-                            <div>
-                                <strong className="block font-bold mb-0.5">Recovery Sequence Activated</strong>
-                                <span className="text-[14px] text-zinc-300 leading-normal">
-                                    {success} Check your communication log terminal for your raw letter-only password credentials.
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Input Collection Form Wrapper */}
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-6 flex-grow justify-between">
-                        
-                        {/* Interactive Float Floating Input Label Hook */}
-                        <div className="relative w-full border border-[#333639] focus-within:border-[#1d9bf0] rounded-[4px] bg-black pt-4 pb-1 px-3 group transition-all duration-150">
-                            <input
-                                type="text"
-                                value={identity}
-                                onChange={(e) => setIdentity(e.target.value)}
-                                required
-                                disabled={loading || !!success}
-                                placeholder=" "
-                                className="w-full bg-transparent border-none text-[17px] text-white outline-none focus:ring-0 peer h-7 pt-1"
-                            />
-                            <label className="absolute left-3 text-[#71767b] pointer-events-none transition-all duration-150 transform origin-top-left
-                                top-4 text-[17px] scale-100
-                                peer-focus:top-1 peer-focus:scale-[0.76] peer-focus:text-[#1d9bf0]
-                                peer-not-placeholder-shown:top-1 peer-not-placeholder-shown:scale-[0.76]">
-                                Email address or phone number
-                            </label>
-                        </div>
-
-                        {/* Submission Action Blocks */}
-                        <div className="mt-auto sm:mt-8 pt-6">
-                            <button
-                                type="submit"
-                                disabled={loading || !!success || !identity.trim()}
-                                className="w-full bg-[#eff3f4] hover:bg-[#d7dbdc] active:bg-[#cdd1d2] disabled:bg-[#eff3f4]/50 disabled:text-[#0f1419]/50 text-[#0f1419] font-bold py-3.5 px-4 rounded-full text-[17px] leading-5 transition-all duration-200 flex justify-center items-center gap-2 select-none shadow-sm cursor-pointer disabled:cursor-not-allowed transform active:scale-[0.99]"
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>Searching records...</span>
-                                    </>
-                                ) : (
-                                    <span>Next</span>
-                                )}
-                            </button>
-                        </div>
-
-                    </form>
                 </div>
-
             </div>
         </div>
     );
