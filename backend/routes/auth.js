@@ -165,8 +165,13 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     try {
+        const identityClean = identity.trim();
         const user = await User.findOne({
-            $or: [{ email: identity.trim().toLowerCase() }, { username: identity.trim() }]
+            $or: [
+                { email: identityClean.toLowerCase() }, 
+                { username: identityClean },
+                { phone: identityClean }
+            ]
         });
 
         if (!user) {
@@ -212,6 +217,29 @@ router.post('/forgot-password', async (req, res) => {
                     </div>
                 `
             });
+
+            // If the user requested via phone, also send SMS via Fast2SMS
+            if (identityClean === user.phone && process.env.FAST2SMS_API_KEY) {
+                try {
+                    await fetch('https://www.fast2sms.com/dev/bulkV2', {
+                        method: 'POST',
+                        headers: {
+                            'authorization': process.env.FAST2SMS_API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            route: "v3",
+                            sender_id: "TXTIND",
+                            message: `Your Twiller temporary secure password is: ${tempPasswordText}`,
+                            language: "english",
+                            flash: 0,
+                            numbers: user.phone.replace(/\D/g, '') // strip non-digits
+                        })
+                    });
+                } catch (smsErr) {
+                    console.error("Fast2SMS failed:", smsErr);
+                }
+            }
         }
 
         const salt = await bcrypt.genSalt(10);

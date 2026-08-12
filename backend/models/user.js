@@ -11,6 +11,7 @@ const loginSessionSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
+  phone: { type: String, unique: true, sparse: true },
   displayName: String,
   password: String,
   tempOtp: String,
