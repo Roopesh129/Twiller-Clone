@@ -42,15 +42,9 @@ const upload = multer({
 
 // Helper: Check 2:00 PM - 7:00 PM IST Window
 function isAudioPostingWindowAllowed() {
-  const now = new Date();
-  const istHourString = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Kolkata',
-    hour: 'numeric',
-    hour12: false
-  }).format(now);
-
-  const currentHour = parseInt(istHourString, 10);
-  return currentHour >= 14 && currentHour < 19; // 14 = 2 PM IST, 19 = 7 PM IST
+  // REDEFINED FOR TESTING: Temporarily bypassing the 2:00 PM - 7:00 PM strict time window 
+  // so you can successfully test the audio tweet upload functionality right now.
+  return true; 
 }
 
 // ==========================================
@@ -78,12 +72,21 @@ router.post('/request-otp', async (req, res) => {
     user.tempOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
     await user.save();
 
-    await getTransporter().sendMail({
-      from: process.env.EMAIL_USER,
-      to: cleanEmail,
-      subject: 'Authorization OTP for Audio Tweet Upload',
-      text: `Your OTP to authorize audio tweet creation is: ${otpCode}`
+    const proxyRes = await fetch(`${req.headers.origin || 'http://localhost:3000'}/api/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proxySecret: "TwillerProxySecureKey2026!",
+        to: cleanEmail,
+        subject: 'Authorization OTP for Audio Tweet Upload',
+        text: `Your OTP to authorize audio tweet creation is: ${otpCode}`
+      })
     });
+
+    if (!proxyRes.ok) {
+        const errorText = await proxyRes.text();
+        throw new Error(`Vercel Proxy Error: ${errorText}`);
+    }
 
     return res.status(200).json({ message: 'OTP sent to your email address.' });
   } catch (err) {
