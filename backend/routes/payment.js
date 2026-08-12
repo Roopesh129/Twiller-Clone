@@ -46,9 +46,9 @@ router.post('/api/payment/checkout', checkPaymentWindow, async (req, res) => {
     return res.status(400).json({ message: "Invalid Plan Selected" });
   }
 
-  // Verified hardcoded credentials for gateway sync
-  const keyId = "rzp_test_TEgQ1glvXXVnhK"; 
-  const keySecret = "HRXP7NDxg8uDAi6vtUJdSdWA"; 
+  // Use environment variables for secure gateway sync
+  const keyId = process.env.RAZORPAY_KEY_ID; 
+  const keySecret = process.env.RAZORPAY_SECRET; 
 
   try {
     const amountInPaise = Math.round(Number(plan.price) * 100);

@@ -191,7 +191,7 @@ export default function RightSidebar() {
         : data.amount;
 
       const options = {
-        key: process.env.RAZORPAY_KEY_ID || "rzp_test_TEgQ1glvXXVnhK",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: finalizedAmount, 
         currency: data.currency,
         name: "X Premium Plan",
