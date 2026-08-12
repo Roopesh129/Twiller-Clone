@@ -84,24 +84,24 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
         2. Added overflow-hidden to completely ban scrollbars
         3. Kept justify-between to push the profile to the absolute bottom
       */}
-      <div className="flex flex-col h-screen overflow-hidden w-full sticky top-0 bg-background px-2 pb-3 pt-1 justify-between">
+      <div className="flex flex-col h-screen overflow-y-auto overflow-x-hidden no-scrollbar w-full sticky top-0 bg-background px-2 pb-3 pt-1 justify-between">
         
         <div className="flex flex-col items-start w-full">
           {/* Logo Section */}
-          <Link href="/" className="my-2 p-3 hover:bg-accent rounded-full transition-colors flex items-center justify-center mx-auto xl:mx-0 w-fit">
+          <Link href="/" className="my-1 p-2 hover:bg-accent rounded-full transition-colors flex items-center justify-center mx-auto xl:mx-0 w-fit">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="w-8 h-8 fill-current text-foreground">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
             </svg>
           </Link>
           
           {/* Navigation Links - Reduced space-y and padding for perfect fit */}
-          <nav className="flex flex-col space-y-0.5 w-full">
+          <nav className="flex flex-col space-y-0 w-full">
             {navigation.map((item) => (
               <div key={item.page} className="w-full">
                 <Button
                   variant="ghost"
-                  // Reduced py-3 to py-2.5 to compress the height slightly
-                  className={`h-auto py-2.5 px-4 w-fit rounded-full hover:bg-accent transition-colors flex items-center justify-start text-foreground hover:text-foreground ${
+                  // Reduced py-2.5 to py-2 to compress the height slightly
+                  className={`h-auto py-2 px-4 w-fit rounded-full hover:bg-accent transition-colors flex items-center justify-start text-foreground hover:text-foreground ${
                     item.current ? 'font-bold' : 'font-normal'
                   }`}
                   onClick={() => handleNavClick(item.page)}
@@ -129,9 +129,9 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
               </Button>
             </div>
             
-            {/* Post Button - Reduced mt-4 to mt-3 */}
+            {/* Post Button - Reduced mt-3 to mt-2 */}
             <Button 
-              className="w-[90%] h-[52px] sm:w-12 sm:h-12 xl:w-[90%] xl:h-[52px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[17px] rounded-full mt-3 transition-colors flex items-center justify-center shadow-md mx-auto xl:mx-0 p-0"
+              className="w-[90%] h-[48px] sm:w-12 sm:h-12 xl:w-[90%] xl:h-[48px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[17px] rounded-full mt-2 transition-colors flex items-center justify-center shadow-md mx-auto xl:mx-0 p-0"
               onClick={() => router.push('/')}
             >
               <span className="inline sm:hidden xl:inline">{t('post')}</span>
