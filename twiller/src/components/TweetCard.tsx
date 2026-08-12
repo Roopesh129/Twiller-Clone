@@ -18,7 +18,7 @@ import AudioTweetCard from "./AudioTweetCard";
 
 const getMediaUrl = (url?: string) => {
   if (!url) return "";
-  if (url.startsWith("http")) return url;
+  if (url.startsWith("http") || url.startsWith("data:")) return url;
   const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
@@ -147,6 +147,102 @@ export default function TweetCard({ tweet }: any) {
   const authorDisplayName = tweetstate.author?.displayName || tweetstate.author?.username || "Anonymous";
   const authorUsername = tweetstate.author?.username || "anonymous";
 
+  const renderReplyModal = () => {
+    if (!showReplyModal) return null;
+    return (
+      <div 
+        className="fixed inset-0 z-[150] flex items-start justify-center bg-black/40 backdrop-blur-sm sm:items-center p-3 sm:p-4"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowReplyModal(false);
+        }}
+      >
+        <div 
+          className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+            <button 
+              onClick={() => setShowReplyModal(false)}
+              className="p-2 hover:bg-accent rounded-full transition-colors -ml-2"
+            >
+              <X className="h-5 w-5 text-foreground" />
+            </button>
+            <Button 
+              onClick={submitReply}
+              disabled={!replyText.trim() || isReplying}
+              className={`rounded-full px-5 font-bold h-8 transition-opacity ${
+                !replyText.trim() 
+                  ? "bg-[#C4C4C4] text-white opacity-70 cursor-not-allowed hover:bg-[#C4C4C4]" 
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
+            >
+              Reply
+            </Button>
+          </div>
+
+          <div className="px-4 pt-4 pb-2 flex gap-3">
+            <div className="flex flex-col items-center shrink-0">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={getMediaUrl(user?.avatar)} alt={user?.displayName} />
+                <AvatarFallback className="bg-slate-300 text-slate-600 font-bold">
+                  {user?.displayName?.[0] || "?"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            <div className="flex-1 min-w-0 pt-1 pb-4">
+              <div className="text-[15px] text-muted-foreground mb-3 truncate">
+                Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{authorUsername}</span>
+              </div>
+              
+              <textarea
+                autoFocus
+                placeholder="Post your reply"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                className="w-full bg-transparent text-foreground text-lg sm:text-xl placeholder-muted-foreground border-none focus:ring-0 outline-none resize-none min-h-[80px]"
+              />
+            </div>
+          </div>
+
+          {/* RENDER PREVIOUS REPLIES IN MODAL */}
+          <div className="px-4 border-t border-border pt-4 pb-4 max-h-[300px] overflow-y-auto no-scrollbar bg-accent/10">
+            <h3 className="font-bold text-sm text-muted-foreground mb-4">Previous Replies</h3>
+            {(!tweetstate.replies || tweetstate.replies.length === 0) ? (
+              <div className="text-center text-muted-foreground text-[14px] py-4">
+                No replies yet. Be the first to reply!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {[...tweetstate.replies].reverse().map((reply: any, idx: number) => (
+                  <div key={idx} className="flex gap-3">
+                    <Avatar className="w-8 h-8 shrink-0 mt-0.5">
+                      <AvatarImage src={getMediaUrl(reply.userId?.avatar) || `https://i.pravatar.cc/150?u=${reply.userId || idx}`} />
+                      <AvatarFallback className="bg-slate-300 text-slate-700 text-xs font-bold">
+                        {reply.userId?.displayName?.[0] || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-1 truncate w-full">
+                        <span className="font-bold text-[14px] text-foreground truncate">{reply.userId?.displayName || "User"}</span>
+                        <span className="text-muted-foreground text-[14px] truncate">@{reply.userId?.username || "user"}</span>
+                      </div>
+                      <div className="text-[13px] text-muted-foreground mt-0.5 mb-1">
+                        Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{authorUsername}</span>
+                      </div>
+                      <p className="text-[14px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (tweetstate.mediaType === "audio" || tweetstate.audioUrl) {
     return (
       <>
@@ -171,60 +267,7 @@ export default function TweetCard({ tweet }: any) {
             setShowReplyModal(true);
           }}
         />
-        {showReplyModal && (
-          <div 
-            className="fixed inset-0 z-[150] flex items-start justify-center bg-black/40 backdrop-blur-sm sm:items-center p-3 sm:p-4"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowReplyModal(false);
-            }}
-          >
-            <div 
-              className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-                <button 
-                  onClick={() => setShowReplyModal(false)}
-                  className="p-2 hover:bg-accent rounded-full transition-colors -ml-2"
-                >
-                  <X className="h-5 w-5 text-foreground" />
-                </button>
-                <Button 
-                  onClick={submitReply}
-                  disabled={!replyText.trim() || isReplying}
-                  className={`rounded-full px-5 font-bold h-8 transition-opacity ${
-                    !replyText.trim() 
-                      ? "bg-[#C4C4C4] text-white opacity-70 cursor-not-allowed hover:bg-[#C4C4C4]" 
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
-                >
-                  Reply
-                </Button>
-              </div>
-
-              <div className="px-4 pt-4 pb-2 flex gap-3">
-                <div className="flex flex-col items-center shrink-0">
-                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
-                    <AvatarImage src={getMediaUrl(user?.avatar)} alt={user?.displayName || "User"} />
-                    <AvatarFallback className="bg-slate-300 text-slate-600 font-bold text-sm sm:text-base">
-                      {user?.displayName?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <div className="flex-1 min-w-0 pt-1">
-                  <textarea
-                    placeholder="Post your reply"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    className="w-full bg-transparent text-foreground text-lg sm:text-xl outline-none resize-none overflow-hidden placeholder-muted-foreground/70 min-h-[120px]"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {renderReplyModal()}
       </>
     );
   }
@@ -351,95 +394,7 @@ export default function TweetCard({ tweet }: any) {
         </div>
       </article>
 
-      {showReplyModal && (
-        <div 
-          className="fixed inset-0 z-[150] flex items-start justify-center bg-black/40 backdrop-blur-sm sm:items-center p-3 sm:p-4"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowReplyModal(false);
-          }}
-        >
-          <div 
-            className="bg-background w-full max-w-[600px] rounded-2xl border border-border shadow-2xl mt-12 sm:mt-0 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-              <button 
-                onClick={() => setShowReplyModal(false)}
-                className="p-2 hover:bg-accent rounded-full transition-colors -ml-2"
-              >
-                <X className="h-5 w-5 text-foreground" />
-              </button>
-              <Button 
-                onClick={submitReply}
-                disabled={!replyText.trim() || isReplying}
-                className={`rounded-full px-5 font-bold h-8 transition-opacity ${
-                  !replyText.trim() 
-                    ? "bg-[#C4C4C4] text-white opacity-70 cursor-not-allowed hover:bg-[#C4C4C4]" 
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
-              >
-                Reply
-              </Button>
-            </div>
-
-            <div className="px-4 pt-4 pb-2 flex gap-3">
-              <div className="flex flex-col items-center shrink-0">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.avatar} alt={user?.displayName} />
-                  <AvatarFallback className="bg-slate-300 text-slate-600 font-bold">
-                    {user?.displayName?.[0] || "?"}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-
-              <div className="flex-1 min-w-0 pt-1 pb-4">
-                <div className="text-[15px] text-muted-foreground mb-3 truncate">
-                  Replying to <span className="text-sky-500 hover:underline cursor-pointer">@{authorUsername}</span>
-                </div>
-                
-                <textarea
-                  autoFocus
-                  placeholder="Post your reply"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="w-full bg-transparent text-foreground text-lg sm:text-xl placeholder-muted-foreground border-none focus:ring-0 outline-none resize-none min-h-[80px]"
-                />
-              </div>
-            </div>
-
-            {/* RENDER PREVIOUS REPLIES IN MODAL */}
-            <div className="px-4 border-t border-border pt-4 pb-4 max-h-[300px] overflow-y-auto no-scrollbar bg-accent/10">
-              <h3 className="font-bold text-sm text-muted-foreground mb-4">Previous Replies</h3>
-              {(!tweetstate.replies || tweetstate.replies.length === 0) ? (
-                <div className="text-center text-muted-foreground text-[14px] py-4">
-                  No replies yet. Be the first to reply!
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {[...tweetstate.replies].reverse().map((reply: any, idx: number) => (
-                    <div key={idx} className="flex gap-3">
-                      <Avatar className="w-8 h-8 shrink-0 mt-0.5">
-                        <AvatarImage src={reply.userId?.avatar || `https://i.pravatar.cc/150?u=${reply.userId || idx}`} />
-                        <AvatarFallback className="bg-slate-300 text-slate-700 text-xs font-bold">
-                          {reply.userId?.displayName?.[0] || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-1 truncate w-full">
-                          <span className="font-bold text-[14px] text-foreground truncate">{reply.userId?.displayName || "User"}</span>
-                          <span className="text-muted-foreground text-[14px] truncate">@{reply.userId?.username || "user"}</span>
-                        </div>
-                        <p className="text-[14px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {renderReplyModal()}
     </>
   );
 }

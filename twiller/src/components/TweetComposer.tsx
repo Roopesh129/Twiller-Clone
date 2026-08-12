@@ -26,7 +26,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 const getMediaUrl = (url?: string) => {
   if (!url) return "";
-  if (url.startsWith("http")) return url;
+  if (url.startsWith("http") || url.startsWith("data:")) return url;
   const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
@@ -241,31 +241,21 @@ const TweetComposer = ({ onTweetPosted }: any) => {
     setIsLoading(true);
     const image = e.target.files[0];
     
-    // Quick size validation
-    if (image.size > 32 * 1024 * 1024) {
+    if (image.size > 5 * 1024 * 1024) {
       setIsLoading(false);
-      return alert("Image is too large. Max size is 32MB.");
+      return alert("Image is too large. Max size is 5MB for database storage.");
     }
 
-    const formdataimg = new FormData();
-    formdataimg.set("image", image);
-    try {
-      const res = await axiosInstance.post("/api/upload-image", formdataimg, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const url = res.data.url;
-      if (url) {
-        setimageurl(url);
-      } else {
-        alert("Upload succeeded but no image URL was returned.");
-      }
-    } catch (error: any) {
-      const errMsg = error.response?.data?.error?.message || error.message || "Unknown error";
-      alert(`Image upload failed: ${errMsg}`);
-      console.error("ImgBB Upload Error:", error);
-    } finally {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setimageurl(reader.result as string);
       setIsLoading(false);
-    }
+    };
+    reader.onerror = () => {
+      alert("Failed to read image file.");
+      setIsLoading(false);
+    };
+    reader.readAsDataURL(image);
   };
 
   const characterCount = content.length;

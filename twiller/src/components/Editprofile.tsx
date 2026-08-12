@@ -72,21 +72,22 @@ const Editprofile = ({ isopen, onclose }: any) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setIsLoading(true);
     const image = e.target.files[0];
-    const formdataimg = new FormData();
-    formdataimg.set("image", image);
-    try {
-      const res = await axiosInstance.post("/api/upload-image", formdataimg, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const url = res.data.url;
-      if (url) {
-        setFormdata((prev) => ({ ...prev, avatar: url }));
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
+    
+    if (image.size > 5 * 1024 * 1024) {
       setIsLoading(false);
+      return alert("Image is too large. Max size is 5MB.");
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormdata((prev) => ({ ...prev, avatar: reader.result as string }));
+      setIsLoading(false);
+    };
+    reader.onerror = () => {
+      console.log("Failed to read image file.");
+      setIsLoading(false);
+    };
+    reader.readAsDataURL(image);
   };
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
