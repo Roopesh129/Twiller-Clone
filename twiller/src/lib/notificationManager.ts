@@ -32,14 +32,18 @@ export const checkAndTriggerNotification = async (
     (typeof window !== "undefined" &&
       localStorage.getItem("userNotificationsEnabled") === "true");
 
-  if (!isEnabled) return;
+  if (!isEnabled) {
+    alert("Notification skipped because they are toggled OFF (or the browser hasn't synced the setting yet. Please visit the Profile page!).");
+    return;
+  }
 
   // 2. Ensure Browser API support & granted permission
-  if (
-    typeof window === "undefined" ||
-    !("Notification" in window) ||
-    Notification.permission !== "granted"
-  ) {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return;
+  }
+  
+  if (Notification.permission !== "granted") {
+    alert("Notification permission is not granted! Please allow it in your browser settings.");
     return;
   }
 
@@ -61,6 +65,7 @@ export const checkAndTriggerNotification = async (
     };
 
     try {
+      alert(`SYSTEM NOTIFICATION: ${title}\n\n(If you did not see a desktop popup, Windows Do Not Disturb is blocking it!)`);
       // Prioritize classic Notification constructor for reliable desktop testing
       new Notification(title, options);
     } catch (err) {
