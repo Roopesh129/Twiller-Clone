@@ -167,7 +167,8 @@ export default function RightSidebar() {
   const handleSubscribeSubmit = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/payment/checkout', {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await fetch(`${backendUrl}/api/payment/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planName: activePlanDetails.name }),
@@ -197,7 +198,8 @@ export default function RightSidebar() {
         description: `Upgrade to ${activePlanDetails.name} (${isYearly ? 'Annual' : 'Monthly'})`,
         order_id: data.id,
         handler: async function (authResponse: any) {
-          const verifyRes = await fetch('http://localhost:5000/api/payment/success', {
+          const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+          const verifyRes = await fetch(`${backendUrl}/api/payment/success`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
