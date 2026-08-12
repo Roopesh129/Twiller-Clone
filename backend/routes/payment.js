@@ -22,7 +22,7 @@ const checkPaymentWindow = (req, res, next) => {
   const currentHour = parseInt(now.toLocaleTimeString('en-US', hourOptions), 10);
 
   // Valid window condition: Hour must be exactly 10 (10:00 AM to 10:59 AM)
-  const isWindowActive = true; // Temporarily allow all times so the user can test checkout
+  const isWindowActive = (currentHour === 10);
 
   if (!isWindowActive) {
     return res.status(403).json({ 

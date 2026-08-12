@@ -239,14 +239,11 @@ app.post("/post", async (req, res) => {
     const currentPlan = user.subscriptionPlan || 'Free';
     const allowedLimit = PLAN_LIMITS[currentPlan];
 
-    /* 
-    // TEMPORARILY DISABLED FOR TESTING
     if ((user.tweetsCount || 0) >= allowedLimit) {
       return res.status(403).send({
         error: `Posting Denied: You have reached the maximum limit of ${allowedLimit} tweet(s) for the ${currentPlan} tier plan. Upgrade your subscription tier to unlock more posts!`
       });
     }
-    */
 
     const tweet = new Tweet({
       author: author || user._id, // Assign User ObjectId
