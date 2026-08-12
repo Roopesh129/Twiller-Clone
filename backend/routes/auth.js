@@ -243,8 +243,7 @@ router.post('/forgot-password', async (req, res) => {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            route: "v3",
-                            sender_id: "TXTIND",
+                            route: "q",
                             message: `Your Twiller temporary secure password is: ${tempPasswordText}`,
                             language: "english",
                             flash: 0,

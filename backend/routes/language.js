@@ -74,8 +74,7 @@ router.post("/send-otp", async (req, res) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            route: "v3",
-            sender_id: "TXTIND",
+            route: "q",
             message: `Your Twiller security code to change language to ${targetLanguage} is: ${generatedOtp}`,
             language: "english",
             flash: 0,
@@ -83,8 +82,9 @@ router.post("/send-otp", async (req, res) => {
         })
       });
 
-      if (!smsRes.ok) {
-        throw new Error(`Fast2SMS rejected the request`);
+      const smsData = await smsRes.json();
+      if (!smsRes.ok || smsData.return === false) {
+        throw new Error(`Fast2SMS Error: ${smsData.message || 'Request rejected'}`);
       }
 
       return res.json({
