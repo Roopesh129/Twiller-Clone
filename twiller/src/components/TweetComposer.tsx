@@ -23,6 +23,13 @@ import { Separator } from "./ui/separator";
 import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
 
+const getMediaUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const TweetComposer = ({ onTweetPosted }: any) => {
   const { user } = useAuth();
   const [content, setContent] = useState("");
@@ -302,7 +309,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
           {/* Image Preview */}
           {imageurl && (
             <div className="relative mt-3 mb-2 rounded-2xl overflow-hidden border border-border inline-block w-full max-h-[400px]">
-              <img src={imageurl} alt="Upload preview" className="object-cover w-full h-full" />
+              <img src={getMediaUrl(imageurl)} alt="Upload preview" className="object-cover w-full h-full" />
               <button
                 type="button"
                 onClick={() => setimageurl("")}
