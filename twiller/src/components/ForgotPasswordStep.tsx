@@ -85,67 +85,70 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
   };
 
   return (
-    <div className="w-full flex flex-col items-center animate-in fade-in duration-200">
-      <div className="w-full flex justify-center mb-6">
-        <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current text-foreground">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      </div>
-
-      <h2 className="text-3xl font-bold tracking-tight text-foreground text-left w-full mb-2">
+    <div className="w-full text-white animate-in fade-in duration-200">
+      <h2 className="text-3xl font-black mb-2 tracking-tight">
         Reset password
       </h2>
       
-      <p className="text-sm text-muted-foreground text-left w-full mb-6 leading-normal">
+      <p className="text-sm text-zinc-400 mb-6 leading-normal">
         Enter your details to manually change your password, or use the auto-generate button to have a secure random credentials set sent directly to your inbox.
       </p>
 
       {/* Operational Feedback Layers */}
       {errorMessage && (
-        <div className="w-full bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+        <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span className="leading-tight">{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
           <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
           <span className="leading-tight">{successMessage} Redirecting...</span>
         </div>
       )}
 
-      <form onSubmit={handleManualSubmit} className="space-y-4 w-full">
+      <form onSubmit={handleManualSubmit} className="space-y-4">
         <div>
+          <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+            Email or Phone Number
+          </label>
           <input
             type="text"
             required
             disabled={isLoading || !!successMessage}
-            placeholder="Email or Phone Number"
-            className="w-full bg-transparent border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-md p-4 text-foreground focus:outline-none transition-all placeholder:text-muted-foreground font-medium text-[15px]"
+            placeholder="Enter email address or phone number"
+            className="w-full bg-zinc-900 border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
             value={identity}
             onChange={(e) => setIdentity(e.target.value)}
           />
         </div>
 
-        <div className="flex flex-col space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
+            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+              New Password
+            </label>
             <input
               type="password"
               disabled={isLoading || !!successMessage}
-              placeholder="New Password"
-              className="w-full bg-transparent border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-md p-4 text-foreground focus:outline-none transition-all placeholder:text-muted-foreground font-medium text-[15px]"
+              placeholder="New custom password"
+              className="w-full bg-zinc-900 border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
               value={manualPassword}
               onChange={(e) => setManualPassword(e.target.value)}
             />
           </div>
 
           <div>
+            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+              Confirm New Password
+            </label>
             <input
               type="password"
               disabled={isLoading || !!successMessage}
-              placeholder="Confirm New Password"
-              className="w-full bg-transparent border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-md p-4 text-foreground focus:outline-none transition-all placeholder:text-muted-foreground font-medium text-[15px]"
+              placeholder="Confirm new password"
+              className="w-full bg-zinc-900 border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -157,7 +160,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
           <button
             type="submit"
             disabled={isLoading || !!successMessage || !identity.trim() || !manualPassword.trim() || !confirmPassword.trim()}
-            className="w-full bg-foreground text-background hover:opacity-90 font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-muted disabled:text-muted-foreground cursor-pointer disabled:cursor-not-allowed"
+            className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-zinc-700 disabled:text-zinc-400 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading && actionType === "manual" ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -172,7 +175,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
             type="button"
             disabled={isLoading || !!successMessage || !identity.trim()}
             onClick={handleAutoGenerateClick}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading && actionType === "auto" ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -186,7 +189,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="w-full bg-transparent hover:bg-accent text-foreground py-3.5 rounded-full text-base font-bold transition-colors duration-200 border border-border cursor-pointer"
+            className="w-full bg-transparent hover:bg-zinc-900 text-zinc-400 py-2.5 rounded-full text-sm font-medium transition-colors duration-200 border border-zinc-800 cursor-pointer"
           >
             Cancel
           </button>
