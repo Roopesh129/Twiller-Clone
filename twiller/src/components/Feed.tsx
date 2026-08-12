@@ -7,6 +7,7 @@ import TweetComposer from "./TweetComposer";
 import axiosInstance from "@/lib/axiosInstance";
 import { checkAndTriggerNotification } from "@/lib/notificationManager";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export interface Tweet {
   _id: string;
@@ -32,6 +33,7 @@ export interface Tweet {
 
 const Feed = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setloading] = useState(false);
 
@@ -132,11 +134,11 @@ const Feed = () => {
       
       {/* Sticky Header with Backdrop Blur */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border flex flex-col cursor-pointer">
-        <div className="px-4 py-3 text-xl font-bold hidden sm:block">Home</div>
+        <div className="px-4 py-3 text-xl font-bold hidden sm:block">{t("home") || "Home"}</div>
         
         {/* Custom Twitter-Style Tabs without Shadcn Borders */}
         <div className="flex w-full overflow-x-auto no-scrollbar">
-          {["For you", "Following", "Sports", "Tech", "Gaming"].map((tab, idx) => (
+          {[t("explore") || "For you", "Following", "Sports", "Tech", "Gaming"].map((tab, idx) => (
             <div key={tab} className="flex-1 min-w-[100px] hover:bg-accent transition-colors flex items-center justify-center cursor-pointer">
               <div className={`relative py-4 text-[15px] whitespace-nowrap px-2 flex flex-col items-center ${idx === 0 ? 'text-foreground font-bold' : 'text-muted-foreground font-medium hover:text-foreground'}`}>
                 {tab}
@@ -160,7 +162,7 @@ const Feed = () => {
         {loading ? (
           <div className="py-12 flex flex-col items-center justify-center">
             <LoadingSpinner size="lg" className="mb-4" />
-            <p className="text-muted-foreground font-medium">Loading tweets...</p>
+            <p className="text-muted-foreground font-medium">{t("more") || "Loading"}...</p>
           </div>
         ) : (
           tweets.map((tweet) => <TweetCard key={tweet._id} tweet={tweet} />)

@@ -22,6 +22,7 @@ import {
 import { Separator } from "./ui/separator";
 import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
+import { useLanguage } from "@/context/LanguageContext";
 
 const getMediaUrl = (url?: string) => {
   if (!url) return "";
@@ -32,6 +33,7 @@ const getMediaUrl = (url?: string) => {
 
 const TweetComposer = ({ onTweetPosted }: any) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageurl, setimageurl] = useState("");
@@ -482,7 +484,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 }`}
               >
-                {isLoading ? "Posting..." : audioBlob ? "Post Voice" : "Post"}
+                {isLoading ? "Posting..." : audioBlob ? "Post Voice" : (t("post") || "Post")}
               </Button>
             </div>
           </div>

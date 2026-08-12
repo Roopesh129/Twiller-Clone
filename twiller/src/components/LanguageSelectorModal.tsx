@@ -6,8 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage, LanguageCode } from "@/context/LanguageContext";
 import { Button } from "./ui/button";
 import axiosInstance from "@/lib/axiosInstance";
-import { auth } from "@/context/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 interface LanguageOption {
   code: LanguageCode;
@@ -24,11 +22,7 @@ const LANGUAGES: LanguageOption[] = [
   { code: "fr", label: "French", nativeName: "Français" },
 ];
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-  }
-}
+
 
 export default function LanguageSelectorModal({
   isOpen,
@@ -48,50 +42,9 @@ export default function LanguageSelectorModal({
   const [error, setError] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
 
-  // Firebase SMS Confirmation Session
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
-  // Clean up reCAPTCHA instance when the modal is closed or unmounted
-  useEffect(() => {
-    return () => {
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (e) {
-          // Ignore errors during clear
-        }
-        window.recaptchaVerifier = undefined;
-      }
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
-  // Lazily retrieve or instantiate the RecaptchaVerifier singleton
-  const getOrCreateRecaptcha = async () => {
-    if (typeof window === "undefined") return null;
 
-    if (!window.recaptchaVerifier) {
-      const container = document.getElementById("recaptcha-container");
-      if (!container) return null;
-
-      const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-        size: "invisible",
-        callback: () => {
-          // reCAPTCHA solved automatically
-        },
-        "expired-callback": () => {
-          setError("reCAPTCHA expired. Please try sending the SMS code again.");
-        },
-      });
-
-      window.recaptchaVerifier = verifier;
-      // Pre-render reCAPTCHA to prevent collision on signInWithPhoneNumber
-      await verifier.render();
-    }
-
-    return window.recaptchaVerifier;
-  };
 
   const handleSelectLanguage = (code: LanguageCode) => {
     if (code === language) {
@@ -102,29 +55,29 @@ export default function LanguageSelectorModal({
     setPendingLanguage(code);
     setError("");
 
-    // RULE 1: French -> Email Verification via Express Backend
+    // RULE 1: French -> Email Verification
     if (code === "fr") {
       const userEmail = user?.email;
       if (!userEmail) {
         setError("No registered email address found for your account.");
         return;
       }
-      sendEmailOtpBackend(code, userEmail);
+      sendOtpBackend(code, userEmail, "email");
     } 
-    // RULE 2: All Other Languages -> Firebase Mobile SMS
+    // RULE 2: All Other Languages -> SMS via Backend
     else {
       const existingMobile = (user as any)?.mobile || (user as any)?.phone;
       if (existingMobile) {
         setMobileNumber(existingMobile);
-        sendFirebaseSms(code, existingMobile);
+        sendOtpBackend(code, existingMobile, "sms");
       } else {
         setStep("mobile_input");
       }
     }
   };
 
-  // --- Dispatch Email OTP via Backend Node Service (For French) ---
-  const sendEmailOtpBackend = async (code: LanguageCode, email: string) => {
+  // --- Dispatch OTP via Backend Node Service ---
+  const sendOtpBackend = async (code: LanguageCode, destination: string, type: "email" | "sms") => {
     setLoading(true);
     setError("");
 
@@ -132,11 +85,11 @@ export default function LanguageSelectorModal({
       await axiosInstance.post("/api/language/send-otp", {
         userId: user?._id,
         targetLanguage: code,
-        type: "email",
-        destination: email,
+        type: type,
+        destination: destination,
       });
 
-      setInfoMessage(`A security code was sent to your registered email (${email}).`);
+      setInfoMessage(`A security code was sent to your ${type === "email" ? "email" : "mobile"} (${destination}).`);
       setStep("verify");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to send email verification code.");
@@ -145,55 +98,7 @@ export default function LanguageSelectorModal({
     }
   };
 
-  // --- Dispatch Real SMS via Firebase Auth (For Non-French Languages) ---
-  const sendFirebaseSms = async (code: LanguageCode, rawPhone: string) => {
-    setLoading(true);
-    setError("");
 
-    try {
-      const appVerifier = await getOrCreateRecaptcha();
-
-      if (!appVerifier) {
-        throw new Error("reCAPTCHA failed to initialize. Please refresh the page.");
-      }
-
-      const cleanDigits = rawPhone.replace(/\D/g, "");
-      const formattedPhone = rawPhone.startsWith("+")
-        ? rawPhone
-        : `+91${cleanDigits.slice(-10)}`;
-
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-
-      setConfirmationResult(confirmation);
-
-      const targetLabel = LANGUAGES.find((l) => l.code === code)?.nativeName;
-      setInfoMessage(`An SMS code was sent to ${formattedPhone} to switch language to ${targetLabel}.`);
-      setStep("verify");
-    } catch (err: any) {
-      console.error("Firebase Phone Auth Error:", err);
-
-      // Reset instance on error so the user can re-trigger a fresh flow
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (e) {}
-        window.recaptchaVerifier = undefined;
-      }
-
-      const fbErrorMessage =
-        err?.code === "auth/invalid-phone-number"
-          ? "Invalid phone number format."
-          : err?.code === "auth/too-many-requests"
-          ? "Too many requests. Please wait a few minutes."
-          : err?.code === "auth/billing-not-enabled"
-          ? "Firebase SMS billing is not enabled. Add test phone numbers in Firebase Console or upgrade to Blaze plan."
-          : err?.message || "Failed to send SMS code. Please try again.";
-
-      setError(fbErrorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleMobileSubmit = () => {
     const cleanNumber = mobileNumber.trim();
@@ -203,7 +108,7 @@ export default function LanguageSelectorModal({
     }
 
     if (pendingLanguage) {
-      sendFirebaseSms(pendingLanguage, cleanNumber);
+      sendOtpBackend(pendingLanguage, cleanNumber, "sms");
     }
   };
 
@@ -219,66 +124,36 @@ export default function LanguageSelectorModal({
     setError("");
 
     try {
-      if (pendingLanguage === "fr") {
-        // Verify French Email Code via Backend
-        const res = await axiosInstance.post("/api/language/verify-otp", {
-          userId: user?._id,
-          targetLanguage: pendingLanguage,
-          otp: cleanOtp,
-        });
+      // Both Email and SMS are now verified uniformly via our custom backend
+      const res = await axiosInstance.post("/api/language/verify-otp", {
+        userId: user?._id,
+        targetLanguage: pendingLanguage,
+        otp: cleanOtp,
+      });
 
-        if (res.data?.success) {
-          setLanguage(pendingLanguage);
-          resetAndClose();
-        }
-      } else {
-        // Verify SMS Code via Firebase Auth Client
-        if (!confirmationResult) throw new Error("No active SMS verification session found.");
-
-        await confirmationResult.confirm(cleanOtp);
-
-        // Save preference in MongoDB after successful Firebase SMS verification
-        if (user?._id && pendingLanguage) {
-          await axiosInstance.post("/api/language/update-preference", {
-            userId: user._id,
-            targetLanguage: pendingLanguage,
-          });
-        }
-
-        if (pendingLanguage) {
-          setLanguage(pendingLanguage);
-        }
+      if (res.data?.success) {
+        if (pendingLanguage) setLanguage(pendingLanguage);
         resetAndClose();
       }
     } catch (err: any) {
-      console.error("Verification Error:", err);
-      setError("Invalid verification code. Please try again.");
+      setError(err?.response?.data?.message || "Invalid or expired verification code.");
     } finally {
       setLoading(false);
     }
   };
 
   const resetAndClose = () => {
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch (e) {}
-      window.recaptchaVerifier = undefined;
-    }
     setStep("select");
     setPendingLanguage(null);
     setMobileNumber("");
     setUserOtp("");
     setError("");
     setInfoMessage("");
-    setConfirmationResult(null);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-zinc-800/40 backdrop-blur-sm">
-      {/* Permanent container for Firebase reCAPTCHA */}
-      <div id="recaptcha-container"></div>
 
       <div className="w-full max-w-md bg-background border border-border rounded-2xl text-foreground shadow-2xl overflow-hidden">
         {/* Header */}
@@ -322,7 +197,7 @@ export default function LanguageSelectorModal({
                     </span>
                   ) : (
                     <span className="text-[10px] text-muted-foreground bg-accent/50 px-2 py-1 rounded border border-border flex items-center gap-1">
-                      <Smartphone className="w-3 h-3 text-emerald-400" /> Firebase SMS
+                      <Smartphone className="w-3 h-3 text-emerald-400" /> SMS OTP
                     </span>
                   )}
                 </button>
