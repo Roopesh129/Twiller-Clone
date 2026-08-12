@@ -219,8 +219,9 @@ export default function RightSidebar() {
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
-    } catch (err) {
-      alert("Network connectivity error processing checkout.");
+    } catch (err: any) {
+      alert(`Checkout failed: ${err.message || "Unknown error"}. Check console for details.`);
+      console.error("Checkout crash:", err);
     } finally {
       setLoading(false);
     }
