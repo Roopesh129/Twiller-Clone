@@ -1,7 +1,8 @@
 import axios from "axios";
 
+const rawUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", // Points to Vercel env or falls back to local
+  baseURL: rawUrl.replace(/\/+$/, ""), // Points to Vercel env or falls back to local
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
