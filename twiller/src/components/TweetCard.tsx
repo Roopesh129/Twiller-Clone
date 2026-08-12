@@ -38,6 +38,7 @@ export default function TweetCard({ tweet }: any) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyingToReplyId, setReplyingToReplyId] = useState<string | null>(null);
   const [replyingToUsername, setReplyingToUsername] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const handleCloseModal = () => {
     setShowReplyModal(false);
@@ -486,12 +487,13 @@ export default function TweetCard({ tweet }: any) {
               {tweetstate.content}
             </div>
 
-            {tweetstate.image && (
+            {tweetstate.image && !imageError && (
               <div className="mb-3 rounded-2xl overflow-hidden border border-border">
                 <img
                   src={getMediaUrl(tweetstate.image)}
                   alt="Tweet image"
                   className="w-full h-auto max-h-[510px] object-cover"
+                  onError={() => setImageError(true)}
                 />
               </div>
             )}
