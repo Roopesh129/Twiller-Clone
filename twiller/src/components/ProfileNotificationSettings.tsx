@@ -9,17 +9,21 @@ import { Bell, BellOff } from "lucide-react";
 export default function ProfileNotificationSettings() {
   const { user, setUser } = useAuth();
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(
-    ((user as any)?.notificationsEnabled as boolean) ?? true
-  );
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("userNotificationsEnabled");
+      if (stored !== null) return stored === "true";
+    }
+    return ((user as any)?.notificationsEnabled as boolean) ?? false;
+  });
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const userNotificationsEnabled = (user as any)?.notificationsEnabled;
-    if (user && typeof userNotificationsEnabled === "boolean") {
-      setNotificationsEnabled(userNotificationsEnabled);
+    // Keep local storage in sync on mount just in case
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userNotificationsEnabled", String(notificationsEnabled));
     }
-  }, [user]);
+  }, []);
 
   const handleToggle = async () => {
     const nextState = !notificationsEnabled;
@@ -36,6 +40,10 @@ export default function ProfileNotificationSettings() {
     setLoading(true);
     try {
       setNotificationsEnabled(nextState);
+      
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userNotificationsEnabled", String(nextState));
+      }
 
       // Save preference to MongoDB
       if (user?._id) {
@@ -52,6 +60,9 @@ export default function ProfileNotificationSettings() {
     } catch (error) {
       console.error("Failed to save notification preference:", error);
       setNotificationsEnabled(!nextState); // Rollback state on error
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userNotificationsEnabled", String(!nextState));
+      }
     } finally {
       setLoading(false);
     }
