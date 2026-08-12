@@ -1,0 +1,290 @@
+/* =========================================================================
+   LOGIN HISTORY CONTAINER
+   ========================================================================= */
+.login-history-container {
+  width: 100%;
+}
+
+/* =========================================================================
+   LOGIN HISTORY ITEMS
+   ========================================================================= */
+.login-history-item {
+  transition: all 0.3s ease;
+}
+
+.login-history-item.active {
+  position: relative;
+}
+
+.login-history-item.blocked {
+  opacity: 0.7;
+}
+
+.login-history-item:hover {
+  transform: translateY(-2px);
+}
+
+/* =========================================================================
+   BADGES
+   ========================================================================= */
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge.active {
+  background-color: #10b981;
+  color: #ecfdf5;
+}
+
+.badge.logged-out {
+  background-color: #6b7280;
+  color: #f3f4f6;
+}
+
+.badge.blocked {
+  background-color: #ef4444;
+  color: #fef2f2;
+}
+
+.badge.auth-google {
+  background-color: #fca5a5;
+  color: #7f1d1d;
+}
+
+.badge.auth-email_otp {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
+.badge.auth-microsoft {
+  background-color: #ddd6fe;
+  color: #3730a3;
+}
+
+.badge.auth-password {
+  background-color: #fed7aa;
+  color: #92400e;
+}
+
+/* =========================================================================
+   DEVICE CATEGORY STYLING
+   ========================================================================= */
+.device-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.device-badge.mobile {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.device-badge.tablet {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.device-badge.laptop {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.device-badge.desktop {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+/* =========================================================================
+   IP ADDRESS
+   ========================================================================= */
+.ip-address {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+  color: #9ca3af;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+/* =========================================================================
+   BUTTONS
+   =========================================================================*/
+.btn-block {
+  padding: 8px 16px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-block:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.btn-block:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-report {
+  padding: 8px 16px;
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-report:hover:not(:disabled) {
+  background-color: #d97706;
+  transform: scale(1.05);
+}
+
+.btn-danger {
+  padding: 10px 20px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* =========================================================================
+   LOADING STATE
+   ========================================================================= */
+.loading-skeleton {
+  background: linear-gradient(90deg, #1f2937 0%, #111827 50%, #1f2937 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* =========================================================================
+   RESPONSIVE
+   ========================================================================= */
+@media (max-width: 768px) {
+  .login-history-item {
+    flex-direction: column;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .btn-block,
+  .btn-report {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge {
+    display: block;
+    margin-top: 4px;
+  }
+
+  .ip-address {
+    word-break: break-all;
+  }
+}
+
+/* =========================================================================
+   ANIMATIONS
+   ========================================================================= */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-history-item {
+  animation: slide-in 0.3s ease;
+}
+
+/* =========================================================================
+   ACCESSIBILITY
+   ========================================================================= */
+.login-history-item:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+}
+
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* =========================================================================
+   BLOCKED SESSION STYLING
+   ========================================================================= */
+.login-history-item.blocked {
+  border-color: #7f1d1d;
+  background-color: rgba(127, 29, 29, 0.1);
+}
+
+.blocked-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #7f1d1d;
+  color: #fecaca;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
