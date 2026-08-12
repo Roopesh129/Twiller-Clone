@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Sparkles, KeyRound, ArrowLeft, Twitter } from 'lucide-react';
 
 export default function DedicatedForgotPasswordPage() {
     const router = useRouter();
@@ -84,7 +84,7 @@ export default function DedicatedForgotPasswordPage() {
     };
 
     return (
-        <div className="flex justify-center min-h-screen bg-black text-[#e7e9ea] antialiased select-none font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif]">
+        <div className="flex justify-center min-h-screen bg-white text-black antialiased select-none font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif]">
             <div className="w-full max-w-[600px] min-h-screen flex flex-col p-4 sm:p-6 md:p-8 relative">
                 
                 {/* Upper Content Workspace */}
@@ -93,38 +93,36 @@ export default function DedicatedForgotPasswordPage() {
                     {/* Return Navigation Anchor */}
                     <button 
                         onClick={() => router.push('/')}
-                        className="absolute top-6 left-6 p-2 rounded-full hover:bg-zinc-900 text-white transition-colors cursor-pointer flex items-center justify-center"
+                        className="absolute top-6 left-6 p-2 rounded-full hover:bg-gray-100 text-black transition-colors cursor-pointer flex items-center justify-center"
                         aria-label="Back to home"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
 
-                    {/* Centered Iconic Premium Branding Asset */}
+                    {/* Centered Iconic Premium Branding Asset (Original Twitter Bird) */}
                     <div className="flex justify-center pb-9">
-                        <svg className="h-[36px] w-[36px] fill-white" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                        </svg>
+                        <Twitter className="h-10 w-10 text-[#1d9bf0] fill-current" />
                     </div>
 
-                    <div className="w-full text-white animate-in fade-in duration-200">
-                        <h2 className="text-3xl font-black mb-2 tracking-tight">
+                    <div className="w-full animate-in fade-in duration-200">
+                        <h2 className="text-3xl font-black mb-2 tracking-tight text-black">
                             Reset password
                         </h2>
                         
-                        <p className="text-sm text-zinc-400 mb-6 leading-normal">
+                        <p className="text-sm text-gray-500 mb-6 leading-normal font-medium">
                             Enter your details to manually change your password, or use the auto-generate button to have a secure random credentials set sent directly to your inbox.
                         </p>
 
                         {/* Operational Feedback Layers */}
                         {errorMessage && (
-                            <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+                            <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
                             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                             <span className="leading-tight">{errorMessage}</span>
                             </div>
                         )}
 
                         {successMessage && (
-                            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+                            <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
                             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                             <span className="leading-tight">{successMessage} Redirecting...</span>
                             </div>
@@ -132,7 +130,7 @@ export default function DedicatedForgotPasswordPage() {
 
                         <form onSubmit={handleManualSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                <label className="block text-sm font-bold text-gray-700 mb-1.5">
                                     Email or Phone Number
                                 </label>
                                 <input
@@ -140,7 +138,7 @@ export default function DedicatedForgotPasswordPage() {
                                     required
                                     disabled={isLoading || !!successMessage}
                                     placeholder="Enter email address or phone number"
-                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
                                     value={identity}
                                     onChange={(e) => setIdentity(e.target.value)}
                                 />
@@ -148,28 +146,28 @@ export default function DedicatedForgotPasswordPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">
                                     New Password
                                     </label>
                                     <input
                                     type="password"
                                     disabled={isLoading || !!successMessage}
                                     placeholder="New custom password"
-                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
                                     value={manualPassword}
                                     onChange={(e) => setManualPassword(e.target.value)}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5">
                                     Confirm New Password
                                     </label>
                                     <input
                                     type="password"
                                     disabled={isLoading || !!successMessage}
                                     placeholder="Confirm new password"
-                                    className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+                                    className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
@@ -181,7 +179,7 @@ export default function DedicatedForgotPasswordPage() {
                                 <button
                                     type="submit"
                                     disabled={isLoading || !!successMessage || !identity.trim() || !manualPassword.trim() || !confirmPassword.trim()}
-                                    className="w-full bg-[#eff3f4] hover:bg-[#d7dbdc] text-[#0f1419] font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-zinc-700 disabled:text-zinc-400 cursor-pointer disabled:cursor-not-allowed"
+                                    className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3.5 rounded-full text-[17px] transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-gray-300 disabled:text-gray-500 cursor-pointer disabled:cursor-not-allowed"
                                 >
                                     {isLoading && actionType === "manual" ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -196,7 +194,7 @@ export default function DedicatedForgotPasswordPage() {
                                     type="button"
                                     disabled={isLoading || !!successMessage || !identity.trim()}
                                     onClick={handleAutoGenerateClick}
-                                    className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                                    className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-[17px] transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 >
                                     {isLoading && actionType === "auto" ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />

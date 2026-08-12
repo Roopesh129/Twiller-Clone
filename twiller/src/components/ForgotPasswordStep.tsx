@@ -85,25 +85,25 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
   };
 
   return (
-    <div className="w-full text-white animate-in fade-in duration-200">
-      <h2 className="text-3xl font-black mb-2 tracking-tight">
+    <div className="w-full bg-white text-black animate-in fade-in duration-200">
+      <h2 className="text-3xl font-black mb-2 tracking-tight text-black">
         Reset password
       </h2>
       
-      <p className="text-sm text-zinc-400 mb-6 leading-normal">
+      <p className="text-sm text-gray-500 mb-6 leading-normal font-medium">
         Enter your details to manually change your password, or use the auto-generate button to have a secure random credentials set sent directly to your inbox.
       </p>
 
       {/* Operational Feedback Layers */}
       {errorMessage && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+        <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span className="leading-tight">{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-3.5 rounded-xl text-sm mb-4 flex items-start gap-2.5 font-semibold">
           <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
           <span className="leading-tight">{successMessage} Redirecting...</span>
         </div>
@@ -111,7 +111,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
 
       <form onSubmit={handleManualSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+          <label className="block text-sm font-bold text-gray-700 mb-1.5">
             Email or Phone Number
           </label>
           <input
@@ -119,7 +119,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
             required
             disabled={isLoading || !!successMessage}
             placeholder="Enter email address or phone number"
-            className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+            className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
             value={identity}
             onChange={(e) => setIdentity(e.target.value)}
           />
@@ -127,28 +127,28 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">
               New Password
             </label>
             <input
               type="password"
               disabled={isLoading || !!successMessage}
               placeholder="New custom password"
-              className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+              className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
               value={manualPassword}
               onChange={(e) => setManualPassword(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-zinc-400 mb-1.5">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">
               Confirm New Password
             </label>
             <input
               type="password"
               disabled={isLoading || !!successMessage}
               placeholder="Confirm new password"
-              className="w-full bg-[#16181c] border border-zinc-800 focus:border-blue-500 rounded-xl p-3 text-white focus:outline-none transition-all placeholder:text-zinc-600 font-medium text-[15px]"
+              className="w-full bg-white border border-gray-300 focus:border-[#1d9bf0] rounded-xl p-3 text-black focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] transition-all placeholder:text-gray-400 font-medium text-[15px]"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -160,7 +160,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
           <button
             type="submit"
             disabled={isLoading || !!successMessage || !identity.trim() || !manualPassword.trim() || !confirmPassword.trim()}
-            className="w-full bg-[#eff3f4] hover:bg-[#d7dbdc] text-[#0f1419] font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-zinc-700 disabled:text-zinc-400 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3.5 rounded-full text-[17px] transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-gray-300 disabled:text-gray-500 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading && actionType === "manual" ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -175,7 +175,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
             type="button"
             disabled={isLoading || !!successMessage || !identity.trim()}
             onClick={handleAutoGenerateClick}
-            className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-base transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 rounded-full text-[17px] transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading && actionType === "auto" ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -189,7 +189,7 @@ export default function ForgotPasswordStep({ onClose }: ForgotPasswordStepProps)
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="w-full bg-transparent hover:bg-zinc-900 text-zinc-400 py-2.5 rounded-full text-sm font-medium transition-colors duration-200 border border-zinc-800 cursor-pointer"
+            className="w-full bg-transparent hover:bg-gray-100 text-gray-500 py-2.5 rounded-full text-sm font-bold transition-colors duration-200 border border-gray-300 cursor-pointer"
           >
             Cancel
           </button>
