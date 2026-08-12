@@ -164,6 +164,12 @@ export default function RightSidebar() {
     return () => { document.title = "(1) Home / X"; };
   }, [isModalOpen]);
 
+  useEffect(() => {
+    const handleOpenSubscribe = () => setIsModalOpen(true);
+    window.addEventListener('openSubscribeModal', handleOpenSubscribe);
+    return () => window.removeEventListener('openSubscribeModal', handleOpenSubscribe);
+  }, []);
+
   const handleSubscribeSubmit = async () => {
     setLoading(true);
     try {

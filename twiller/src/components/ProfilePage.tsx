@@ -252,34 +252,34 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-transparent border-b border-border rounded-none h-auto">
+        <TabsList className="flex w-full overflow-x-auto no-scrollbar bg-transparent border-b border-border rounded-none h-auto justify-start sm:justify-between">
           <TabsTrigger
             value="posts"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-xs sm:text-sm font-semibold"
+            className="flex-1 min-w-[70px] sm:min-w-[80px] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-[13px] sm:text-sm font-semibold"
           >
             Posts
           </TabsTrigger>
           <TabsTrigger
             value="replies"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-xs sm:text-sm font-semibold"
+            className="flex-1 min-w-[75px] sm:min-w-[80px] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-[13px] sm:text-sm font-semibold"
           >
             Replies
           </TabsTrigger>
           <TabsTrigger
             value="highlights"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-xs sm:text-sm font-semibold"
+            className="flex-1 min-w-[85px] sm:min-w-[90px] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-[13px] sm:text-sm font-semibold"
           >
             Highlights
           </TabsTrigger>
           <TabsTrigger
             value="articles"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-xs sm:text-sm font-semibold"
+            className="flex-1 min-w-[75px] sm:min-w-[80px] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-[13px] sm:text-sm font-semibold"
           >
             Articles
           </TabsTrigger>
           <TabsTrigger
             value="media"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-xs sm:text-sm font-semibold"
+            className="flex-1 min-w-[70px] sm:min-w-[80px] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-muted-foreground hover:bg-accent py-3 sm:py-4 text-[13px] sm:text-sm font-semibold"
           >
             Media
           </TabsTrigger>

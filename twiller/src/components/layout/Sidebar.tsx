@@ -55,11 +55,20 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
     { name: 'Messages', icon: Mail, current: currentPage === 'messages', page: 'messages' },
     { name: t('bookmarks'), icon: Bookmark, current: currentPage === 'bookmarks', page: 'bookmarks' },
     { name: 'Creator Studio', icon: Rocket, current: currentPage === 'creator', page: 'creator' },
+    { name: 'Subscribe', icon: BadgeCheck, current: currentPage === 'subscribe', page: 'subscribe' },
     { name: t('profile'), icon: User, current: currentPage === 'profile', page: 'profile' },
     { name: t('more'), icon: MoreHorizontal, current: currentPage === 'more', page: 'more' },
   ];
 
   const handleNavClick = (page: string) => {
+    if (page === 'subscribe') {
+      window.dispatchEvent(new Event('openSubscribeModal'));
+      if (onNavigate) {
+        onNavigate('subscribe');
+      }
+      return;
+    }
+    
     if (onNavigate) {
       onNavigate(page);
     }
@@ -98,8 +107,8 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                   }`}
                   onClick={() => handleNavClick(item.page)}
                 >
-                  <item.icon className="xl:mr-5 h-[26px] w-[26px]" />
-                  <span className="hidden xl:inline text-[20px]">{item.name}</span>
+                  <item.icon className="mr-4 sm:mr-0 xl:mr-5 h-[26px] w-[26px]" />
+                  <span className="inline sm:hidden xl:inline text-[20px]">{item.name}</span>
                   {item.badge && (
                     <span className="ml-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                       3
@@ -116,18 +125,18 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                 className="h-auto py-2.5 px-4 w-fit rounded-full hover:bg-accent transition-colors flex items-center justify-start font-normal text-foreground hover:text-foreground"
                 onClick={() => setIsLangModalOpen(true)}
               >
-                <Globe className="xl:mr-5 h-[26px] w-[26px]" />
-                <span className="hidden xl:inline text-[20px]">{t('selectLanguage')}</span>
+                <Globe className="mr-4 sm:mr-0 xl:mr-5 h-[26px] w-[26px]" />
+                <span className="inline sm:hidden xl:inline text-[20px]">{t('selectLanguage')}</span>
               </Button>
             </div>
             
             {/* Post Button - Reduced mt-4 to mt-3 */}
             <Button 
-              className="w-12 h-12 xl:w-[90%] xl:h-[52px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[17px] rounded-full mt-3 transition-colors flex items-center justify-center shadow-md mx-auto xl:mx-0 p-0"
+              className="w-[90%] h-[52px] sm:w-12 sm:h-12 xl:w-[90%] xl:h-[52px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[17px] rounded-full mt-3 transition-colors flex items-center justify-center shadow-md mx-auto xl:mx-0 p-0"
               onClick={() => router.push('/')}
             >
-              <span className="hidden xl:inline">{t('post')}</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-6 h-6 fill-current xl:hidden"><g><path d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.22-2.01.593-2.97l1.204-1.204c.239.23.498.439.774.629l3.05 3.05c1.47 1.47 3.99 1.47 5.46 0l4.95-4.95c1.47-1.47 1.47-3.99 0-5.46l-3.05-3.05c-.19-.276-.399-.535-.629-.774l1.204-1.204C20.99 5.22 22 5.007 23 4V3zm-2.12 6.88l-4.95 4.95c-.68.68-.68 1.79 0 2.47l3.05 3.05c.68.68 1.79.68 2.47 0l4.95-4.95c.68-.68.68-1.79 0-2.47l-3.05-3.05c-.68-.68-1.79-.68-2.47 0z"></path></g></svg>
+              <span className="inline sm:hidden xl:inline">{t('post')}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-6 h-6 fill-current hidden sm:block xl:hidden"><g><path d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.22-2.01.593-2.97l1.204-1.204c.239.23.498.439.774.629l3.05 3.05c1.47 1.47 3.99 1.47 5.46 0l4.95-4.95c1.47-1.47 1.47-3.99 0-5.46l-3.05-3.05c-.19-.276-.399-.535-.629-.774l1.204-1.204C20.99 5.22 22 5.007 23 4V3zm-2.12 6.88l-4.95 4.95c-.68.68-.68 1.79 0 2.47l3.05 3.05c.68.68 1.79.68 2.47 0l4.95-4.95c.68-.68.68-1.79 0-2.47l-3.05-3.05c-.68-.68-1.79-.68-2.47 0z"></path></g></svg>
             </Button>
           </nav>
         </div>
@@ -149,7 +158,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                       </AvatarFallback>
                     </Avatar>
 
-                    <div className="hidden xl:flex flex-col items-start truncate w-[130px]">
+                    <div className="flex sm:hidden xl:flex flex-col items-start truncate w-[130px]">
                       <span className="text-foreground font-bold text-[15px] leading-5 truncate w-full text-left">
                         {user?.displayName || user?.username || "User"}
                       </span>
@@ -159,7 +168,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                     </div>
                   </div>
 
-                  <MoreHorizontal className="hidden xl:block h-5 w-5 text-foreground shrink-0" />
+                  <MoreHorizontal className="block sm:hidden xl:block h-5 w-5 text-foreground shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
 

@@ -310,8 +310,8 @@ const TweetComposer = ({ onTweetPosted }: any) => {
 
           {/* Image Preview */}
           {imageurl && (
-            <div className="relative mt-3 mb-2 rounded-2xl overflow-hidden border border-border inline-block w-full max-h-[400px]">
-              <img src={getMediaUrl(imageurl)} alt="Upload preview" className="object-cover w-full h-full" />
+            <div className="relative mt-3 mb-2 rounded-2xl overflow-hidden border border-border w-full">
+              <img src={getMediaUrl(imageurl)} alt="Upload preview" className="w-full h-auto max-h-[400px] object-cover block" />
               <button
                 type="button"
                 onClick={() => setimageurl("")}
@@ -371,16 +371,16 @@ const TweetComposer = ({ onTweetPosted }: any) => {
           <div className="flex items-center justify-between">
             
             {/* The exact icon row from the image */}
-            <div className="flex items-center gap-1 text-slate-400 -ml-2">
+            <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 -ml-2 flex-1 overflow-x-auto no-scrollbar mr-2">
               
               {/* 1. Image */}
-              <label htmlFor="tweetImage" className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors" title="Upload Image">
+              <label htmlFor="tweetImage" className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0" title="Upload Image">
                 <ImageIcon className="h-5 w-5" strokeWidth={1.5} />
                 <input type="file" accept="image/*" id="tweetImage" className="hidden" onChange={handlePhotoUpload} disabled={isLoading || !!audioBlob} />
               </label>
 
               {/* 2. Custom GIF Icon (Now functional for GIF uploads) */}
-              <label className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block" title="Upload GIF">
+              <label className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0" title="Upload GIF">
                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth={1.5}>
                     <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
                     <text x="6" y="15" fontSize="8" fontWeight="bold" stroke="none" className="fill-current">GIF</text>
@@ -389,7 +389,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
               </label>
 
               {/* 3. Audio/Mic (Replacing the slashed icon for functionality) */}
-              <div className="flex items-center">
+              <div className="flex items-center shrink-0">
                 <label htmlFor="tweetAudioFile" className={`p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors ${!!audioBlob ? "opacity-50 cursor-not-allowed" : ""}`} title="Upload Audio File">
                   <Upload className="h-5 w-5" strokeWidth={1.5} />
                   <input type="file" accept="audio/*" id="tweetAudioFile" className="hidden" onChange={handleAudioFileUpload} disabled={isLoading || !!audioBlob} />
@@ -407,13 +407,13 @@ const TweetComposer = ({ onTweetPosted }: any) => {
               </div>
 
               {/* 4. Poll/List */}
-              <button type="button" onClick={() => alert("Poll creation coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block" title="Create Poll">
+              <button type="button" onClick={() => alert("Poll creation coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0" title="Create Poll">
                 <ListPlus className="h-5 w-5" strokeWidth={1.5} />
               </button>
               
               {/* 5. Emoji/Smile */}
-              <div className="relative">
-                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block" title="Add Emoji">
+              <div className="relative shrink-0">
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors" title="Add Emoji">
                   <Smile className="h-5 w-5" strokeWidth={1.5} />
                 </button>
                 
@@ -435,17 +435,17 @@ const TweetComposer = ({ onTweetPosted }: any) => {
               </div>
               
               {/* 6. Calendar/Schedule */}
-              <button type="button" onClick={() => alert("Tweet scheduling coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block" title="Schedule">
+              <button type="button" onClick={() => alert("Tweet scheduling coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0" title="Schedule">
                 <CalendarClock className="h-5 w-5" strokeWidth={1.5} />
               </button>
               
               {/* 7. Location */}
-              <button type="button" onClick={() => alert("Location tagging coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block" title="Location">
+              <button type="button" onClick={() => alert("Location tagging coming soon!")} className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0" title="Location">
                 <MapPin className="h-5 w-5" opacity={0.5} strokeWidth={1.5} />
               </button>
 
               {/* 8. Flag */}
-              <button type="button" className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors hidden sm:block">
+              <button type="button" className="p-2 hover:bg-primary/10 hover:text-primary rounded-full cursor-pointer transition-colors shrink-0">
                 <Flag className="h-5 w-5" strokeWidth={1.5} />
               </button>
             </div>

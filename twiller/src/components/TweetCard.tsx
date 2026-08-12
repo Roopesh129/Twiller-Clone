@@ -425,12 +425,12 @@ export default function TweetCard({ tweet }: any) {
                           {reply.userId?.displayName?.[0] || "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1">
-                          <span className="font-bold text-[14px] text-foreground">{reply.userId?.displayName || "User"}</span>
-                          <span className="text-muted-foreground text-[14px]">@{reply.userId?.username || "user"}</span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-1 truncate w-full">
+                          <span className="font-bold text-[14px] text-foreground truncate">{reply.userId?.displayName || "User"}</span>
+                          <span className="text-muted-foreground text-[14px] truncate">@{reply.userId?.username || "user"}</span>
                         </div>
-                        <p className="text-[14px] text-foreground mt-0.5">{reply.content}</p>
+                        <p className="text-[14px] text-foreground mt-0.5 whitespace-pre-wrap break-words">{reply.content}</p>
                       </div>
                     </div>
                   ))}
