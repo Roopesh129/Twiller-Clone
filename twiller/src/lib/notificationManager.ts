@@ -70,6 +70,8 @@ export const checkAndTriggerNotification = async (
       console.warn("Classic Notification failed (likely mobile browser). Attempting ServiceWorker fallback...", err);
       try {
         if ("serviceWorker" in navigator) {
+          // Register the service worker to ensure it exists for mobile browsers
+          await navigator.serviceWorker.register("/sw.js");
           const registration = await navigator.serviceWorker.ready;
           if (registration && registration.showNotification) {
             await registration.showNotification(title, options);
